@@ -1,7 +1,8 @@
 extern crate rustc_serialize;
-extern crate core;
 
 use rustc_serialize::json;
+//use std::thread;
+
 
 #[test]
 fn test_some() {
