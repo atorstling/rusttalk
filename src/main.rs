@@ -11,6 +11,8 @@ fn pcons<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
     })
 }
 
+//fn plist<F, R>(fs: &[&F]) -> &
+
 #[test]
 fn pcons_returns_correct_values() {
     let (a, b) = pcons(|| 1, || 2);
@@ -25,3 +27,4 @@ fn pcons_can_be_chained() {
     assert!(b == 2);
     assert!(c == 3);
 }
+
