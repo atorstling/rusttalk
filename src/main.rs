@@ -1,6 +1,6 @@
 extern crate crossbeam;
 
-fn fork<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
+fn pcons<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
     where F1: FnOnce() -> R1 + Send,
           F2: FnOnce() -> R2 + Send,
           R1: Send,
@@ -12,15 +12,15 @@ fn fork<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
 }
 
 #[test]
-fn fork_returns_correct_values() {
-    let (a, b) = fork(|| 1, || 2);
+fn pcons_returns_correct_values() {
+    let (a, b) = pcons(|| 1, || 2);
     assert!(a == 1);
     assert!(b == 2);
 }
 
 #[test]
-fn fork_can_be_chained() {
-    let (a, (b, c)) = fork(|| 1, || fork(|| 2, || 3));
+fn pcons_can_be_chained() {
+    let (a, (b, c)) = pcons(|| 1, || pcons(|| 2, || 3));
     assert!(a == 1);
     assert!(b == 2);
     assert!(c == 3);
