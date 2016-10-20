@@ -1,0 +1,8 @@
+thread::spawn requires static lifetime
+crossbeam::scope avoids this requirement
+
+lifetime parameters might be required
+macros lifetimes generics bounds 
+
+move closures
+
