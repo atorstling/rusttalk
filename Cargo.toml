@@ -5,3 +5,4 @@ authors = ["Alexander Torstling <alexander@torstling.com>"]
 [dependencies]
 rustc-serialize = "0.3"
 crossbeam = "0.2"
+hyper = "0.9.7"

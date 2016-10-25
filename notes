@@ -6,3 +6,24 @@ macros lifetimes generics bounds
 
 move closures
 
+if let a = blah {
+
+}
+
+match
+
+panic
+ // Could not reliably pass panics across threads
+    // since they are Box<Any>, and I could not figure out
+    // How to throw a new panic with 
+
+match value_any.downcast_ref::<String>() {
+        Some(as_string) => {
+            println!("String ({}): {}", as_string.len(), as_string);
+        }
+        None => {
+            println!("{:?}", value);
+        }
+    }
+
+no return statement required
