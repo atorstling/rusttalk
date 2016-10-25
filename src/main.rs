@@ -33,12 +33,31 @@ fn pcons_can_be_chained() {
     assert_eq!(c,3);
 }
 
+struct TestServer {
+  listening: hyper::server::Listening
+}
+
+impl TestServer {
+  pub fn new() -> TestServer {
+    TestServer {
+      listening: Server::http("127.0.0.1:9999").unwrap().handle( |_: Request, _: Response| {}).unwrap() }
+  }
+}
+
+impl Drop for TestServer {
+  fn drop(&mut self) {
+    self.listening.close().unwrap();
+  }
+}
+
 #[test]
 fn http_get() {
-    let mut server =
-        Server::http("127.0.0.1:9999").unwrap().handle(|_: Request, _: Response| {}).unwrap();
+    let _server = TestServer::new();
     let client = Client::new();
     let res = client.get("http://127.0.0.1:9999").send().unwrap();
     assert_eq!(res.status, hyper::Ok);
-    server.close().unwrap();
+}
+
+fn main() {
+  TestServer::new();
 }
