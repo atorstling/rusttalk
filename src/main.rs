@@ -1,7 +1,9 @@
+#![feature(fnbox)]
 extern crate crossbeam;
 extern crate hyper;
 use hyper::server::{Server, Request, Response};
 use hyper::client::Client;
+use std::boxed::FnBox;
 
 fn pcons<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
     where F1: FnOnce() -> R1 + Send,
@@ -48,20 +50,36 @@ fn pcons_can_be_chained() {
     assert_eq!(c,3);
 }
 
-fn pconsl<F: ?Sized,R>(fs: &[&F]) -> Vec<R> 
-  where F: FnOnce() -> R 
+// If we use &[&F], we can pass the closure, but
+// cannot call it since the size is unknown, see
+// http://stackoverflow.com/questions/30411594/moving-a-boxed-function
+
+// &[Box<F>] is also unusable for the same reason, Box<FnOnce> is
+// ususable.
+
+// We cannot use &[F], since F is unsized
+// note: slice and array elements must have `Sized` type
+
+//
+// where F: FnBox() -> R 
+
+fn pconsl<R>(fs: &[Box<FnBox() -> R>]) -> Vec<R> 
 {
-  let res: Vec<R> = Vec::new();
-  res
+  if let Some((head, tail)) = fs.split_first() {
+    let headRes: R = head();
+    let mut res: Vec<R> = Vec::new();
+    res.push(headRes);
+    res
+  } else {
+    panic!("empty list");
+  }
 }
 
 #[test]
 fn pcons_list() {
-    let a = || String::from("a");
-    let b = || String::from("b");
-    let mut arr: Vec<&FnOnce() -> String> = Vec::new();
-    arr.push(&a);
-    arr.push(&b);
+    let mut arr: Vec<Box<FnBox() -> String>> = Vec::new();
+    arr.push(Box::new(|| String::from("a")));
+    arr.push(Box::new(|| String::from("b")));
     let res = pconsl(arr.as_slice());
     assert_eq!(res.get(0).unwrap(),&"hej");
 }
