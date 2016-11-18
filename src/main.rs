@@ -48,7 +48,7 @@ fn pcons_can_be_chained() {
     assert_eq!(c,3);
 }
 
-fn pconsl<F: ?Sized,R>(fs: Vec<Box<F>>) -> Vec<R> 
+fn pconsl<F: ?Sized,R>(fs: &[&F]) -> Vec<R> 
   where F: FnOnce() -> R 
 {
   let res: Vec<R> = Vec::new();
@@ -57,10 +57,12 @@ fn pconsl<F: ?Sized,R>(fs: Vec<Box<F>>) -> Vec<R>
 
 #[test]
 fn pcons_list() {
-    let mut arr: Vec<Box<FnOnce() -> String>> = Vec::new();
-    arr.push(Box::new(|| String::from("a")));
-    arr.push(Box::new(|| String::from("b")));
-    let res = pconsl(arr);
+    let a = || String::from("a");
+    let b = || String::from("b");
+    let mut arr: Vec<&FnOnce() -> String> = Vec::new();
+    arr.push(&a);
+    arr.push(&b);
+    let res = pconsl(arr.as_slice());
     assert_eq!(res.get(0).unwrap(),&"hej");
 }
 
