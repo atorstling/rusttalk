@@ -1,9 +1,7 @@
-#![feature(fnbox)]
 extern crate crossbeam;
 extern crate hyper;
 use hyper::server::{Server, Request, Response};
 use hyper::client::Client;
-use std::boxed::FnBox;
 
 fn pcons<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
     where F1: FnOnce() -> R1 + Send,
@@ -63,12 +61,13 @@ fn pcons_can_be_chained() {
 //
 // where F: FnBox() -> R 
 
-fn pconsl<R>(fs: &[Box<Fn() -> R>]) -> Vec<Box<R>> 
+fn pconsl<R>(fs: &[&Fn() -> R]) -> Vec<R> 
 {
   if let Some((head, tail)) = fs.split_first() {
-    let headRes: Box<R> = Box::new(head());
-    let mut res: Vec<Box<R>> = Vec::new();
-    res.push(headRes);
+    let head_res: R = head();
+    
+    let mut res: Vec<R> = Vec::new();
+    res.push(head_res);
     res
   } else {
     panic!("empty list");
@@ -77,11 +76,13 @@ fn pconsl<R>(fs: &[Box<Fn() -> R>]) -> Vec<Box<R>>
 
 #[test]
 fn pcons_list() {
-    let mut arr: Vec<Box<Fn() -> String>> = Vec::new();
-    arr.push(Box::new(|| String::from("a")));
-    arr.push(Box::new(|| String::from("b")));
+    let a = || String::from("a");
+    let b = || String::from("b");
+    let mut arr: Vec<&Fn() -> String> = Vec::new();
+    arr.push(&a);
+    arr.push(&b);
     let res = pconsl(arr.as_slice());
-    assert_eq!(res.get(0).unwrap(),&Box::new(String::from("a")));
+    assert_eq!(res.get(0).unwrap(),&String::from("a"));
 }
 
 struct TestServer {
