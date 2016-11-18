@@ -63,11 +63,11 @@ fn pcons_can_be_chained() {
 //
 // where F: FnBox() -> R 
 
-fn pconsl<R>(fs: &[Box<FnBox() -> R>]) -> Vec<R> 
+fn pconsl<R>(fs: &[Box<Fn() -> R>]) -> Vec<Box<R>> 
 {
   if let Some((head, tail)) = fs.split_first() {
-    let headRes: R = head();
-    let mut res: Vec<R> = Vec::new();
+    let headRes: Box<R> = Box::new(head());
+    let mut res: Vec<Box<R>> = Vec::new();
     res.push(headRes);
     res
   } else {
@@ -77,11 +77,11 @@ fn pconsl<R>(fs: &[Box<FnBox() -> R>]) -> Vec<R>
 
 #[test]
 fn pcons_list() {
-    let mut arr: Vec<Box<FnBox() -> String>> = Vec::new();
+    let mut arr: Vec<Box<Fn() -> String>> = Vec::new();
     arr.push(Box::new(|| String::from("a")));
     arr.push(Box::new(|| String::from("b")));
     let res = pconsl(arr.as_slice());
-    assert_eq!(res.get(0).unwrap(),&"hej");
+    assert_eq!(res.get(0).unwrap(),&Box::new(String::from("a")));
 }
 
 struct TestServer {
