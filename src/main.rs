@@ -16,36 +16,36 @@ fn pcons<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
     })
 }
 
-//fn pconsl<F, R>(fs: &[F]) -> Vec<R>
+// fn pconsl<F, R>(fs: &[F]) -> Vec<R>
 //  where F: FnOnce() -> R,
-//{
-  //if let Some((head, tail)) = fs.split_first() {
- //   let res = pcons(
- //    || head(),
- //    || pconsl(tail)
- ////////////////   );
+// {
+// if let Some((head, tail)) = fs.split_first() {
+//   let res = pcons(
+//    || head(),
+//    || pconsl(tail)
+// /////////////   );
 //    let mut arr: Vec<R> = Vec::new();
 //    return arr;
 //  } else {
- //   panic!("empty list");
- // }
-//}
+//   panic!("empty list");
+// }
+// }
 
 // fn plist<F, R>(fs: &[&F]) -> &
 
 #[test]
 fn pcons_returns_correct_values() {
     let (a, b) = pcons(|| 1, || 2);
-    assert_eq!(a,1);
-    assert_eq!(b,2);
+    assert_eq!(a, 1);
+    assert_eq!(b, 2);
 }
 
 #[test]
 fn pcons_can_be_chained() {
     let (a, (b, c)) = pcons(|| 1, || pcons(|| 2, || 3));
-    assert_eq!(a,1);
-    assert_eq!(b,2);
-    assert_eq!(c,3);
+    assert_eq!(a, 1);
+    assert_eq!(b, 2);
+    assert_eq!(c, 3);
 }
 
 // If we use &[&F], we can pass the closure, but
@@ -58,20 +58,22 @@ fn pcons_can_be_chained() {
 // We cannot use &[F], since F is unsized
 // note: slice and array elements must have `Sized` type
 
-//
-// where F: FnBox() -> R 
+// where F: FnBox() -> R
 
-fn pconsl<R>(fs: &[&Fn() -> R]) -> Vec<R> 
+fn pconsl<F, R>(fs: &[&F]) -> Vec<R>
+    where F: Fn() -> R + Send + Sync,
+          R: Send
 {
-  if let Some((head, tail)) = fs.split_first() {
-    let head_res: R = head();
-    
     let mut res: Vec<R> = Vec::new();
-    res.push(head_res);
+    if let Some((h1, t1)) = fs.split_first() {
+        let tmp: Vec<R> = Vec::new();
+        let (h1r, t1r) = pcons(|| h1(), || tmp);
+        res.push(h1r);
+        res.append(&mut t1r);
+    } else {
+        panic!("empty list");
+    }
     res
-  } else {
-    panic!("empty list");
-  }
 }
 
 #[test]
@@ -81,25 +83,30 @@ fn pcons_list() {
     let mut arr: Vec<&Fn() -> String> = Vec::new();
     arr.push(&a);
     arr.push(&b);
-    let res = pconsl(arr.as_slice());
-    assert_eq!(res.get(0).unwrap(),&String::from("a"));
+    let fs: &[&Fn() -> String] = arr.as_slice();
+    let res = pconsl(fs);
+    assert_eq!(res.get(0).unwrap(), &String::from("a"));
 }
 
 struct TestServer {
-  listening: hyper::server::Listening
+    listening: hyper::server::Listening,
 }
 
 impl TestServer {
-  pub fn new() -> TestServer {
-    TestServer {
-      listening: Server::http("127.0.0.1:9999").unwrap().handle( |_: Request, _: Response| {}).unwrap() }
-  }
+    pub fn new() -> TestServer {
+        TestServer {
+            listening: Server::http("127.0.0.1:9999")
+                .unwrap()
+                .handle(|_: Request, _: Response| {})
+                .unwrap(),
+        }
+    }
 }
 
 impl Drop for TestServer {
-  fn drop(&mut self) {
-    self.listening.close().unwrap();
-  }
+    fn drop(&mut self) {
+        self.listening.close().unwrap();
+    }
 }
 
 #[test]
@@ -110,24 +117,23 @@ fn http_get() {
     assert_eq!(res.status, hyper::Ok);
 }
 
-/*
-#[test]
-fn http_get_multiple_get() {
-    let _server = TestServer::new();
-    let client = Client::new();
-    let (res1, (res2, res3)) = pcons(
-      || client.get("http://127.0.0.1:9999").send().unwrap(),
-      pcons(
-      || client.get("http://127.0.0.1:9999").send().unwrap(),
-      || client.get("http://127.0.0.1:9999").send().unwrap()
-      )
-    );
-    assert_eq!(res1.status, hyper::Ok);
-    assert_eq!(res2.status, hyper::Ok);
-    assert_eq!(res3.status, hyper::Ok);
-}
-*/
+// #[test]
+// fn http_get_multiple_get() {
+// let _server = TestServer::new();
+// let client = Client::new();
+// let (res1, (res2, res3)) = pcons(
+// || client.get("http://127.0.0.1:9999").send().unwrap(),
+// pcons(
+// || client.get("http://127.0.0.1:9999").send().unwrap(),
+// || client.get("http://127.0.0.1:9999").send().unwrap()
+// )
+// );
+// assert_eq!(res1.status, hyper::Ok);
+// assert_eq!(res2.status, hyper::Ok);
+// assert_eq!(res3.status, hyper::Ok);
+// }
+//
 
 fn main() {
-  TestServer::new();
+    TestServer::new();
 }
