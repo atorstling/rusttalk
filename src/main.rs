@@ -63,7 +63,7 @@ fn pcons_can_be_chained() {
 
 fn pconsl<R>(fs: &[&Fn() -> R]) -> Vec<R> 
 {
-  if let Some((head, tail)) = fs.split_first() {
+  if let Some((head, _)) = fs.split_first() {
     let head_res: R = head();
     
     let mut res: Vec<R> = Vec::new();
