@@ -16,22 +16,6 @@ fn pcons<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
     })
 }
 
-//fn pconsl<F, R>(fs: &[F]) -> Vec<R>
-//  where F: FnOnce() -> R,
-//{
-  //if let Some((head, tail)) = fs.split_first() {
- //   let res = pcons(
- //    || head(),
- //    || pconsl(tail)
- ////////////////   );
-//    let mut arr: Vec<R> = Vec::new();
-//    return arr;
-//  } else {
- //   panic!("empty list");
- // }
-//}
-
-// fn plist<F, R>(fs: &[&F]) -> &
 
 #[test]
 fn pcons_returns_correct_values() {
@@ -74,8 +58,24 @@ fn pconsl<R>(fs: &[&Fn() -> R]) -> Vec<R>
   }
 }
 
+//fn pconsl<F, R>(fs: &[F]) -> Vec<R>
+//  where F: FnOnce() -> R,
+//{
+  //if let Some((head, tail)) = fs.split_first() {
+ //   let res = pcons(
+ //    || head(),
+ //    || pconsl(tail)
+ ////////////////   );
+//    let mut arr: Vec<R> = Vec::new();
+//    return arr;
+//  } else {
+ //   panic!("empty list");
+ // }
+//}
+
+// fn plist<F, R>(fs: &[&F]) -> &
 #[test]
-fn pcons_list() {
+fn pconsl_works() {
     let a = || String::from("a");
     let b = || String::from("b");
     let mut arr: Vec<&Fn() -> String> = Vec::new();
