@@ -85,7 +85,7 @@ fn pconsl<F, R>(mut fs: Vec<F>) -> Vec<R>
     let mut arr: Vec<R> = Vec::new();
     arr.push(res.0);
     arr.append(&mut res.1);
-    return arr;
+    arr
 }
 
 // fn plist<F, R>(fs: &[&F]) -> &
