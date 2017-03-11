@@ -1,13 +1,18 @@
+#![feature(closure_to_fn_coercion)]
 extern crate crossbeam;
 extern crate hyper;
 use hyper::server::{Server, Request, Response};
 use hyper::client::Client;
 
+// Crossbeam::scope requires Send:
+// fn spawn<F, T>(&self, f: F) -> ScopedJoinHandle<T> 
+// where F: FnOnce() -> T + Send + 'a, T: Send + 'a
+// Send means Sync + Copy
 fn pcons<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
     where F1: FnOnce() -> R1 + Send,
           F2: FnOnce() -> R2 + Send,
           R1: Send,
-          R2: Send
+          R2: Send 
 {
     crossbeam::scope(|scope| {
         (scope.spawn(f1)
@@ -45,6 +50,8 @@ fn pcons_can_be_chained() {
 //
 // where F: FnBox() -> R 
 
+// Goal: have pconsl use pcons
+/*
 fn pconsl<R>(fs: &[&Fn() -> R]) -> Vec<R> 
 {
   if let Some((head, _)) = fs.split_first() {
@@ -57,32 +64,41 @@ fn pconsl<R>(fs: &[&Fn() -> R]) -> Vec<R>
     panic!("empty list");
   }
 }
-
-//fn pconsl<F, R>(fs: &[F]) -> Vec<R>
-//  where F: FnOnce() -> R,
-//{
-  //if let Some((head, tail)) = fs.split_first() {
- //   let res = pcons(
- //    || head(),
- //    || pconsl(tail)
- ////////////////   );
-//    let mut arr: Vec<R> = Vec::new();
-//    return arr;
-//  } else {
- //   panic!("empty list");
- // }
-//}
+*/
+fn pconsl<F, R>(mut fs: Vec<F>) -> Vec<R>
+  where F: FnOnce() -> R + Send + Sync,
+        R: Send ,
+{
+    if fs.len() == 0 {
+        let vec: Vec<R> = vec![];
+        return vec;
+    }
+    if fs.len() == 1 {
+        return vec![fs.remove(0)()];
+    }
+  let tail: Vec<F> = fs.split_off(1);
+  let head: F = fs.remove(0);
+    let mut res: (R, Vec<R>) = pcons(
+     || head(),
+     || pconsl(tail)
+    );
+    let mut arr: Vec<R> = Vec::new();
+    arr.push(res.0);
+    arr.append(&mut res.1);
+    return arr;
+}
 
 // fn plist<F, R>(fs: &[&F]) -> &
 #[test]
 fn pconsl_works() {
-    let a = || String::from("a");
-    let b = || String::from("b");
-    let mut arr: Vec<&Fn() -> String> = Vec::new();
-    arr.push(&a);
-    arr.push(&b);
-    let res = pconsl(arr.as_slice());
-    assert_eq!(res.get(0).unwrap(),&String::from("a"));
+    let a = || 1;
+    let b = || 2;
+    let arr: Vec<fn() -> u32> = vec![a, b];
+    //arr.push(&a);
+    //arr.push(&b);
+    let res = pconsl(arr);
+    assert_eq!(res.get(0).unwrap(), &1);
+    //assert_eq!(res.get(0).unwrap(),&String::from("a"));
 }
 
 struct TestServer {
