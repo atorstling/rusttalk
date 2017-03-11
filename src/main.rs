@@ -106,9 +106,9 @@ struct TestServer {
 }
 
 impl TestServer {
-  pub fn new() -> TestServer {
+  pub fn new(port: &str) -> TestServer {
     TestServer {
-      listening: Server::http("127.0.0.1:9999").unwrap().handle( |_: Request, _: Response| {}).unwrap() }
+      listening: Server::http(["127.0.0.1:", port].join("")).unwrap().handle( |_: Request, _: Response| {}).unwrap() }
   }
 }
 
@@ -120,12 +120,21 @@ impl Drop for TestServer {
 
 #[test]
 fn http_get() {
-    let _server = TestServer::new();
+    let _server = TestServer::new("9999");
     let client = Client::new();
     let res = client.get("http://127.0.0.1:9999").send().unwrap();
     assert_eq!(res.status, hyper::Ok);
 }
 
+#[test]
+fn http_get_two() {
+    let _server = TestServer::new("9998");
+    let client = Client::new();
+    let (res1, res2) = pcons(|| client.get("http://127.0.0.1:9998").send().unwrap(),
+        || client.get("http://127.0.0.1:9998").send().unwrap());
+    assert_eq!(res1.status, hyper::Ok);
+    assert_eq!(res2.status, hyper::Ok);
+}
 /*
 #[test]
 fn http_get_multiple_get() {
@@ -145,5 +154,5 @@ fn http_get_multiple_get() {
 */
 
 fn main() {
-  TestServer::new();
+  TestServer::new("9999");
 }
