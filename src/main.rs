@@ -9,6 +9,7 @@ use hyper::client::Client;
 use hyper::status::StatusCode;
 use hyper_router::{Route, RouterBuilder};
 use std::boxed::FnBox;
+use std::io::Read;
 use rustc_serialize::json;
 
 // Crossbeam::scope requires Send:
@@ -131,12 +132,13 @@ fn pconsl_works() {
     //assert_eq!(res.get(0).unwrap(),&String::from("a"));
 }
 
-struct AutoServer {
-  listening: hyper::server::Listening
+#[derive(RustcEncodable)]
+struct Answer {
+    msg: String	
 }
 
-struct AnswerJson {
-	
+struct AutoServer {
+  listening: hyper::server::Listening
 }
 
 impl AutoServer {
@@ -144,6 +146,9 @@ impl AutoServer {
     let addr = format!("127.0.0.1:{}", port);
     let server = Server::http(addr).unwrap();
 	let get_yo = Route::get("/yo").using(move | _ : Request, res: Response | {
+        let ans = Answer { msg: "mtg_bootstrap!".to_string() };
+        let payload = json::encode(&ans).unwrap();
+        res.send(payload.as_bytes());
     });
 	let put_yo = Route::put("/yo").using(move | req : Request, mut res: Response| {
 		*res.status_mut() = StatusCode::ImATeapot;
@@ -181,8 +186,11 @@ fn main() {
 fn http_get() {
     let _server = AutoServer::new("9999");
     let client = Client::new();
-    let res = client.get("http://127.0.0.1:9999/yo").send().unwrap();
+    let mut res = client.get("http://127.0.0.1:9999/yo").send().unwrap();
     assert_eq!(res.status, hyper::Ok);
+    let mut payload = String::new();
+    res.read_to_string(&mut payload);
+    assert_eq!(payload, "{\"msg\":\"mtg_bootstrap!\"}");
 }
 
 #[test]
