@@ -4,7 +4,7 @@ extern crate crossbeam;
 extern crate hyper;
 extern crate hyper_router;
 extern crate rustc_serialize;
-use hyper::server::{Server, Request, Response};
+use hyper::server::{Server,Request,Response};
 use hyper::client::Client;
 use hyper::status::StatusCode;
 use hyper_router::{Route, RouterBuilder};
@@ -131,7 +131,7 @@ fn pconsl_works() {
     //assert_eq!(res.get(0).unwrap(),&String::from("a"));
 }
 
-struct TestServer {
+struct AutoServer {
   listening: hyper::server::Listening
 }
 
@@ -139,74 +139,79 @@ struct AnswerJson {
 	
 }
 
-impl TestServer {
-  pub fn new(port: &str) -> TestServer {
+impl AutoServer {
+  pub fn new(port: &str) -> AutoServer {
     let addr = format!("127.0.0.1:{}", port);
     let server = Server::http(addr).unwrap();
-	let yo_route = Route::get("/yo").using(move | req : Request, mut res: Response| {
-      match req.method {
-		hyper::Get => {
-			
-			*res.status_mut() = StatusCode::Ok
-		},
-        hyper::Post => {
-			println!("POST");
-        },
-        _ => *res.status_mut() = StatusCode::MethodNotAllowed
-        } 
+	let get_yo = Route::get("/yo").using(move | _ : Request, res: Response | {
+    });
+	let put_yo = Route::put("/yo").using(move | req : Request, mut res: Response| {
+		*res.status_mut() = StatusCode::ImATeapot;
+		res.send(b"no");
     });
 	let router = RouterBuilder::new()
-    .add(yo_route)
+    .add(get_yo)
+	.add(put_yo)
     .build();
-	let root_handler = move |req: Request, resp: Response| {
+	let root_handler = move |req: Request, mut res: Response| {
       match router.find_handler(&req) {
-        Ok(handler) => handler(req, resp),
-        Err(StatusCode::NotFound) => resp.send(b"not found").unwrap(),
-        Err(_) => resp.send(b"some error").unwrap()
+        Ok(handler) => handler(req, res),
+        Err(sc) => *res.status_mut() = sc
       }
     }; 
-    TestServer {
+    AutoServer {
       listening: server.handle(root_handler).unwrap() }
   }
 }
 
-impl Drop for TestServer {
+impl Drop for AutoServer {
   fn drop(&mut self) {
     self.listening.close().unwrap();
   }
 }
 
 fn main() {
-  TestServer::new("9999");
+  let server = AutoServer::new("9999");
+  println!("listening on port 9999");
+  std::thread::park();
+  println!("wakeup, exiting");
 }
 
 #[test]
 fn http_get() {
-    let _server = TestServer::new("9999");
+    let _server = AutoServer::new("9999");
     let client = Client::new();
-    let res = client.get("http://127.0.0.1:9999").send().unwrap();
+    let res = client.get("http://127.0.0.1:9999/yo").send().unwrap();
     assert_eq!(res.status, hyper::Ok);
 }
 
 #[test]
-fn http_get_two() {
-    let _server = TestServer::new("9998");
+fn http_put() {
+    let _server = AutoServer::new("9994");
     let client = Client::new();
-    let (res1, res2) = pcons(|| client.get("http://127.0.0.1:9998").send().unwrap(),
-        || client.get("http://127.0.0.1:9998").send().unwrap());
+    let res = client.put("http://127.0.0.1:9999/yo").send().unwrap();
+    assert_eq!(res.status, StatusCode::ImATeapot);
+}
+
+#[test]
+fn http_get_two() {
+    let _server = AutoServer::new("9998");
+    let client = Client::new();
+    let (res1, res2) = pcons(|| client.get("http://127.0.0.1:9998/yo").send().unwrap(),
+        || client.get("http://127.0.0.1:9998/yo").send().unwrap());
     assert_eq!(res1.status, hyper::Ok);
     assert_eq!(res2.status, hyper::Ok);
 }
 
 #[test]
 fn http_get_multiple() {
-    let _server = TestServer::new("9997");
+    let _server = AutoServer::new("9997");
     let client = Client::new();
     let (res1, (res2, res3)) = pcons(
-      || client.get("http://127.0.0.1:9997").send().unwrap(),
+      || client.get("http://127.0.0.1:9997/yo").send().unwrap(),
       || pcons(
-        || client.get("http://127.0.0.1:9997").send().unwrap(),
-        || client.get("http://127.0.0.1:9997").send().unwrap()
+        || client.get("http://127.0.0.1:9997/yo").send().unwrap(),
+        || client.get("http://127.0.0.1:9997/yo").send().unwrap()
       )
     );
     assert_eq!(res1.status, hyper::Ok);
@@ -216,20 +221,20 @@ fn http_get_multiple() {
 
 #[test]
 fn http_get_pconsl_single() {
-    let _server = TestServer::new("9996");
+    let _server = AutoServer::new("9996");
     let client = Client::new();
-    let v1 = vec![|| client.get("http://127.0.0.1:9996").send().unwrap() ];
+    let v1 = vec![|| client.get("http://127.0.0.1:9996/yo").send().unwrap() ];
     let resl = pconsl(v1);
     assert_eq!(resl.get(0).unwrap().status, hyper::Ok);
 }
 
 #[test]
 fn http_get_pconsl() {
-    let _server = TestServer::new("9995");
+    let _server = AutoServer::new("9995");
     let client = Client::new();
     let mut v1: Vec<Box<FnBox() -> hyper::client::Response + Send>> = Vec::new();
-    v1.push(Box::new(|| client.get("http://127.0.0.1:9995").send().unwrap()));
-    v1.push(Box::new(|| client.get("http://127.0.0.1:9995").send().unwrap()));
+    v1.push(Box::new(|| client.get("http://127.0.0.1:9995/yo").send().unwrap()));
+    v1.push(Box::new(|| client.get("http://127.0.0.1:9995/yo").send().unwrap()));
     let resl = pconsl2(v1);
     assert_eq!(resl.get(0).unwrap().status, hyper::Ok);
     assert_eq!(resl.get(1).unwrap().status, hyper::Ok);
