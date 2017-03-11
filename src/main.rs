@@ -1,8 +1,10 @@
+#![feature(fnbox)]
 #![feature(closure_to_fn_coercion)]
 extern crate crossbeam;
 extern crate hyper;
 use hyper::server::{Server, Request, Response};
 use hyper::client::Client;
+use std::boxed::FnBox;
 
 // Crossbeam::scope requires Send:
 // fn spawn<F, T>(&self, f: F) -> ScopedJoinHandle<T> 
@@ -88,6 +90,29 @@ fn pconsl<F, R>(mut fs: Vec<F>) -> Vec<R>
     arr
 }
 
+fn pconsl2<F, R>(mut fs: Vec<Box<F>>) -> Vec<R>
+  where F: FnBox() -> R + Send + Sync,
+        R: Send ,
+{
+    if fs.len() == 0 {
+        let vec: Vec<R> = vec![];
+        return vec;
+    }
+    if fs.len() == 1 {
+        let head: Box<F> = fs.remove(0);
+        return vec![head.call_box(())];
+    }
+  let tail: Vec<Box<F>> = fs.split_off(1);
+  let head: Box<F> = fs.remove(0);
+    let mut res: (R, Vec<R>) = pcons(
+     || head.call_box(()),
+     || pconsl2(tail)
+    );
+    let mut arr: Vec<R> = Vec::new();
+    arr.push(res.0);
+    arr.append(&mut res.1);
+    arr
+}
 // fn plist<F, R>(fs: &[&F]) -> &
 #[test]
 fn pconsl_works() {
@@ -157,11 +182,15 @@ fn http_get_pconsl() {
     let _server = TestServer::new("9996");
     let client = Client::new();
     let v1 = vec![|| client.get("http://127.0.0.1:9996").send().unwrap() ];
+    //let v1 = vec![|| client.get("http://127.0.0.1:9996").send().unwrap() ];
+    let mut v1: Vec<Box<FnBox() -> hyper::client::Response + Sync>> = Vec::new();
+    v1.push(Box::new(|| client.get("http://127.0.0.1:9996").send().unwrap()));
+    v1.push(Box::new(|| client.get("http://127.0.0.1:9996").send().unwrap()));
     //let v2: Vec<Box<FnOnce() -> hyper::client::Response + Send + Sync>> = Vec::new();
     //v.push(Box::new( || client.get("http://127.0.0.1:9996").send().unwrap()));
       //|| client.get("http://127.0.0.1:9996").send().unwrap(),
       //|| client.get("http://127.0.0.1:9996").send().unwrap()
-    let resl = pconsl(v1);
+    let resl = pconsl2(v1);
     assert_eq!(resl.get(0).unwrap().status, hyper::Ok);
 }
 
