@@ -2,9 +2,14 @@
 #![feature(closure_to_fn_coercion)]
 extern crate crossbeam;
 extern crate hyper;
+extern crate hyper_router;
+extern crate rustc_serialize;
 use hyper::server::{Server, Request, Response};
 use hyper::client::Client;
+use hyper::status::StatusCode;
+use hyper_router::{Route, RouterBuilder};
 use std::boxed::FnBox;
+use rustc_serialize::json;
 
 // Crossbeam::scope requires Send:
 // fn spawn<F, T>(&self, f: F) -> ScopedJoinHandle<T> 
@@ -130,10 +135,38 @@ struct TestServer {
   listening: hyper::server::Listening
 }
 
+struct AnswerJson {
+	
+}
+
 impl TestServer {
   pub fn new(port: &str) -> TestServer {
+    let addr = format!("127.0.0.1:{}", port);
+    let server = Server::http(addr).unwrap();
+	let yo_route = Route::get("/yo").using(move | req : Request, mut res: Response| {
+      match req.method {
+		hyper::Get => {
+			
+			*res.status_mut() = StatusCode::Ok
+		},
+        hyper::Post => {
+			println!("POST");
+        },
+        _ => *res.status_mut() = StatusCode::MethodNotAllowed
+        } 
+    });
+	let router = RouterBuilder::new()
+    .add(yo_route)
+    .build();
+	let root_handler = move |req: Request, resp: Response| {
+      match router.find_handler(&req) {
+        Ok(handler) => handler(req, resp),
+        Err(StatusCode::NotFound) => resp.send(b"not found").unwrap(),
+        Err(_) => resp.send(b"some error").unwrap()
+      }
+    }; 
     TestServer {
-      listening: Server::http(["127.0.0.1:", port].join("")).unwrap().handle( |_: Request, _: Response| {}).unwrap() }
+      listening: server.handle(root_handler).unwrap() }
   }
 }
 
@@ -141,6 +174,10 @@ impl Drop for TestServer {
   fn drop(&mut self) {
     self.listening.close().unwrap();
   }
+}
+
+fn main() {
+  TestServer::new("9999");
 }
 
 #[test]
@@ -198,6 +235,3 @@ fn http_get_pconsl() {
     assert_eq!(resl.get(1).unwrap().status, hyper::Ok);
 }
 
-fn main() {
-  TestServer::new("9999");
-}

@@ -6,3 +6,4 @@ authors = ["Alexander Torstling <alexander@torstling.com>"]
 rustc-serialize = "0.3"
 crossbeam = "0.2"
 hyper = "0.9.7"
+hyper-router = "*"
