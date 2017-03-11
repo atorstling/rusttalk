@@ -137,7 +137,7 @@ fn http_get_two() {
 }
 
 #[test]
-fn http_get_multiple_get() {
+fn http_get_multiple() {
     let _server = TestServer::new("9997");
     let client = Client::new();
     let (res1, (res2, res3)) = pcons(
@@ -150,6 +150,19 @@ fn http_get_multiple_get() {
     assert_eq!(res1.status, hyper::Ok);
     assert_eq!(res2.status, hyper::Ok);
     assert_eq!(res3.status, hyper::Ok);
+}
+
+#[test]
+fn http_get_pconsl() {
+    let _server = TestServer::new("9996");
+    let client = Client::new();
+    let v1 = vec![|| client.get("http://127.0.0.1:9996").send().unwrap() ];
+    //let v2: Vec<Box<FnOnce() -> hyper::client::Response + Send + Sync>> = Vec::new();
+    //v.push(Box::new( || client.get("http://127.0.0.1:9996").send().unwrap()));
+      //|| client.get("http://127.0.0.1:9996").send().unwrap(),
+      //|| client.get("http://127.0.0.1:9996").send().unwrap()
+    let resl = pconsl(v1);
+    assert_eq!(resl.get(0).unwrap().status, hyper::Ok);
 }
 
 fn main() {
