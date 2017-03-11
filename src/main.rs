@@ -143,20 +143,20 @@ struct AutoServer {
 
 impl AutoServer {
   pub fn new(port: &str) -> AutoServer {
-    let addr = format!("127.0.0.1:{}", port);
-    let server = Server::http(addr).unwrap();
-	let get_yo = Route::get("/yo").using(move | _ : Request, res: Response | {
+	let router = RouterBuilder::new()
+    .add(
+        Route::get("/yo").using(move | _ : Request, res: Response | {
         let ans = Answer { msg: "mtg_bootstrap!".to_string() };
         let payload = json::encode(&ans).unwrap();
-        res.send(payload.as_bytes());
-    });
-	let put_yo = Route::put("/yo").using(move | req : Request, mut res: Response| {
+        res.send(payload.as_bytes()).unwrap();
+    })
+        )
+	.add(
+        Route::put("/yo").using(move | _ : Request, mut res: Response| {
 		*res.status_mut() = StatusCode::ImATeapot;
-		res.send(b"no");
-    });
-	let router = RouterBuilder::new()
-    .add(get_yo)
-	.add(put_yo)
+		res.send(b"no").unwrap();
+    })
+        )
     .build();
 	let root_handler = move |req: Request, mut res: Response| {
       match router.find_handler(&req) {
@@ -164,8 +164,11 @@ impl AutoServer {
         Err(sc) => *res.status_mut() = sc
       }
     }; 
+    let addr = format!("127.0.0.1:{}", port);
+    let server = Server::http(addr).unwrap().handle(root_handler).unwrap();
     AutoServer {
-      listening: server.handle(root_handler).unwrap() }
+      listening: server
+    }
   }
 }
 
@@ -176,10 +179,10 @@ impl Drop for AutoServer {
 }
 
 fn main() {
-  let server = AutoServer::new("9999");
+  let _server = AutoServer::new("9999");
   println!("listening on port 9999");
   std::thread::park();
-  println!("wakeup, exiting");
+  panic!("spurious wakeup");
 }
 
 #[test]
@@ -189,7 +192,7 @@ fn http_get() {
     let mut res = client.get("http://127.0.0.1:9999/yo").send().unwrap();
     assert_eq!(res.status, hyper::Ok);
     let mut payload = String::new();
-    res.read_to_string(&mut payload);
+    res.read_to_string(&mut payload).unwrap();
     assert_eq!(payload, "{\"msg\":\"mtg_bootstrap!\"}");
 }
 
