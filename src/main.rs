@@ -91,7 +91,7 @@ fn pconsl<F, R>(mut fs: Vec<F>) -> Vec<R>
 }
 
 fn pconsl2<F, R>(mut fs: Vec<Box<F>>) -> Vec<R>
-  where F: FnBox() -> R + Send + Sync,
+  where F: FnBox() -> R + Send + ?Sized,
         R: Send ,
 {
     if fs.len() == 0 {
@@ -178,20 +178,24 @@ fn http_get_multiple() {
 }
 
 #[test]
-fn http_get_pconsl() {
+fn http_get_pconsl_single() {
     let _server = TestServer::new("9996");
     let client = Client::new();
     let v1 = vec![|| client.get("http://127.0.0.1:9996").send().unwrap() ];
-    //let v1 = vec![|| client.get("http://127.0.0.1:9996").send().unwrap() ];
-    let mut v1: Vec<Box<FnBox() -> hyper::client::Response + Sync>> = Vec::new();
-    v1.push(Box::new(|| client.get("http://127.0.0.1:9996").send().unwrap()));
-    v1.push(Box::new(|| client.get("http://127.0.0.1:9996").send().unwrap()));
-    //let v2: Vec<Box<FnOnce() -> hyper::client::Response + Send + Sync>> = Vec::new();
-    //v.push(Box::new( || client.get("http://127.0.0.1:9996").send().unwrap()));
-      //|| client.get("http://127.0.0.1:9996").send().unwrap(),
-      //|| client.get("http://127.0.0.1:9996").send().unwrap()
+    let resl = pconsl(v1);
+    assert_eq!(resl.get(0).unwrap().status, hyper::Ok);
+}
+
+#[test]
+fn http_get_pconsl() {
+    let _server = TestServer::new("9995");
+    let client = Client::new();
+    let mut v1: Vec<Box<FnBox() -> hyper::client::Response + Send>> = Vec::new();
+    v1.push(Box::new(|| client.get("http://127.0.0.1:9995").send().unwrap()));
+    v1.push(Box::new(|| client.get("http://127.0.0.1:9995").send().unwrap()));
     let resl = pconsl2(v1);
     assert_eq!(resl.get(0).unwrap().status, hyper::Ok);
+    assert_eq!(resl.get(1).unwrap().status, hyper::Ok);
 }
 
 fn main() {
