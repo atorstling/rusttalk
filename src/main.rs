@@ -135,23 +135,22 @@ fn http_get_two() {
     assert_eq!(res1.status, hyper::Ok);
     assert_eq!(res2.status, hyper::Ok);
 }
-/*
+
 #[test]
 fn http_get_multiple_get() {
-    let _server = TestServer::new();
+    let _server = TestServer::new("9997");
     let client = Client::new();
     let (res1, (res2, res3)) = pcons(
-      || client.get("http://127.0.0.1:9999").send().unwrap(),
-      pcons(
-      || client.get("http://127.0.0.1:9999").send().unwrap(),
-      || client.get("http://127.0.0.1:9999").send().unwrap()
+      || client.get("http://127.0.0.1:9997").send().unwrap(),
+      || pcons(
+        || client.get("http://127.0.0.1:9997").send().unwrap(),
+        || client.get("http://127.0.0.1:9997").send().unwrap()
       )
     );
     assert_eq!(res1.status, hyper::Ok);
     assert_eq!(res2.status, hyper::Ok);
     assert_eq!(res3.status, hyper::Ok);
 }
-*/
 
 fn main() {
   TestServer::new("9999");
