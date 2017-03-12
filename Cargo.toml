@@ -1,3 +1,5 @@
+#Tested with nightly-2017-03-04
+
 [package]
 name = "rusttalk"
 version = "0.1.0"
