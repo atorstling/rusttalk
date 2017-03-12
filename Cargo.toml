@@ -2,9 +2,18 @@
 name = "rusttalk"
 version = "0.1.0"
 authors = ["Alexander Torstling <alexander@torstling.com>"]
+
 [dependencies]
 rustc-serialize = "0.3"
 crossbeam = "0.2"
 hyper = "0.9"
 # Router only compatible with hyper 0.9
 hyper-router = "0.2"
+
+[lib]
+name = "pcons"
+src = "src/pcons.rs"
+
+[[bin]]
+name = "yo"
+src = "src/main.rs"
