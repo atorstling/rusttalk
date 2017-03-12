@@ -3,4 +3,4 @@ test: src/*.rs
 clean:
 	cargo clean
 format:
-	cargo format
+	cargo fmt

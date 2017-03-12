@@ -12,8 +12,6 @@ hyper-router = "0.2"
 
 [lib]
 name = "pcons"
-src = "src/pcons.rs"
 
 [[bin]]
 name = "yo"
-src = "src/main.rs"
