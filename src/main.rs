@@ -24,35 +24,22 @@ fn put_yo(_: Request, mut res: Response) {
     res.send(b"no").unwrap();
 }
 
-struct AutoServer {
-    listening: hyper::server::Listening,
-}
-
-impl AutoServer {
-    pub fn new(port: &str) -> AutoServer {
-        let router = RouterBuilder::new()
-            .add(Route::get("/yo").using(get_yo))
-            .add(Route::put("/yo").using(put_yo))
-            .build();
-        let root_handler = move |req: Request, mut res: Response|
-          match router.find_handler(&req) {
-              Ok(handler) => handler(req, res),
-              Err(sc) => *res.status_mut() = sc,
-          };
-        let addr = format!("127.0.0.1:{}", port);
-        let server = Server::http(addr).unwrap().handle(root_handler).unwrap();
-        AutoServer { listening: server }
-    }
-}
-
-impl Drop for AutoServer {
-    fn drop(&mut self) {
-        self.listening.close().unwrap();
-    }
+fn server(port: &str) -> Box<hyper::server::Listening> {
+    let router = RouterBuilder::new()
+        .add(Route::get("/yo").using(get_yo))
+        .add(Route::put("/yo").using(put_yo))
+        .build();
+    let root_handler = move |req: Request, mut res: Response|
+      match router.find_handler(&req) {
+          Ok(handler) => handler(req, res),
+          Err(sc) => *res.status_mut() = sc,
+      };
+    let addr = format!("127.0.0.1:{}", port);
+    Box::new(Server::http(addr).unwrap().handle(root_handler).unwrap())
 }
 
 fn main() {
-    let _server = AutoServer::new("9999");
+    let server = server("9999");
     println!("listening on port 9999");
     std::thread::park();
     panic!("spurious wakeup");
@@ -63,11 +50,28 @@ mod test {
     extern crate hyper;
     extern crate pcons;
     use self::pcons::{pcons, pconsl, pconsl2};
-    use super::AutoServer;
     use hyper::client::Client;
     use hyper::status::StatusCode;
+    use hyper::server::Listening;
     use std::io::Read;
     use std::boxed::FnBox;
+
+    struct AutoServer {
+        listening: Box<Listening>,
+    }
+
+    impl AutoServer {
+        pub fn new(port: &str) -> AutoServer {
+            let server = super::server(port);
+            AutoServer { listening: server }
+        }
+    }
+
+    impl Drop for AutoServer {
+        fn drop(&mut self) {
+            self.listening.close().unwrap();
+        }
+    }
 
     #[test]
     fn http_get() {
