@@ -30,4 +30,3 @@ From the ``stride`` folder, run:
 ```
 
 Open the resulting ``slides.html`` in a modern browser. You should be able to use arrow keys to navigate through the slides. You should be able to execute embdded code by clicking the **Run** button.
-

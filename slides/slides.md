@@ -1,5 +1,6 @@
 % Rust
 
+![alt text](img/rust.svg)
 Alexander Torstling
 
 # Poll
@@ -14,7 +15,7 @@ Alexander Torstling
 
 
 
-# Yo 
+# Yo
 
 
 <script language="rust">
@@ -30,4 +31,3 @@ fn main() {
     println!("Hello, world!");
 }
 ```
-

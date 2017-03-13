@@ -27,12 +27,12 @@ window.addEventListener('load', function () {
 
 				showResult(resultArea, response.result);
 			} else {
-				showResult(resultArea, 
+				showResult(resultArea,
 					"Request failed with code: " + req.status);
 			}
 		};
 		req.onerror = function(e) {
-				showResult(resultArea, 
+				showResult(resultArea,
 					"Failed to connect to the Playpen server.");
 		}
 		req.setRequestHeader("Content-Type", "application/json");
@@ -41,13 +41,14 @@ window.addEventListener('load', function () {
 	}
 
 function createElements(code) {
-		//Create the div for Ace editor	
+		//Create the div for Ace editor
 		var div = document.createElement("div");
 		div.style.width = "100%";
 		code.parentNode.insertBefore(div, code);
 
 		//Create the editor
 		var editor = ace.edit(div);
+		editor.$blockScrolling = Infinity;
 		editor.setValue(code.textContent.trim(), -1);
 		editor.setTheme("ace/theme/tomorrow");
 		editor.getSession().setMode("ace/mode/rust");
@@ -84,7 +85,7 @@ function createElements(code) {
 
 		for (var i = 0; i < list.length; ++i) {
 				var code = list[i];
-				
+
 				createElements(code);
 		}
 	}
