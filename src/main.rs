@@ -24,7 +24,7 @@ fn put_yo(_: Request, mut res: Response) {
     res.send(b"no").unwrap();
 }
 
-fn server(port: &str) -> RunningServer {
+fn server(port: &str) -> Listening {
     let router = RouterBuilder::new()
         .add(Route::get("/yo").using(get_yo))
         .add(Route::put("/yo").using(put_yo))
