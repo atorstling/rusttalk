@@ -1,2 +1,2 @@
 #!/bin/bash
-ls -d * | entr sh -c './build.sh && reload-browser Chrome'
+ls -d * | entr sh -c './build.sh && reload-browser google-chrome'

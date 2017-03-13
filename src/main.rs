@@ -34,10 +34,11 @@ impl AutoServer {
             .add(Route::get("/yo").using(get_yo))
             .add(Route::put("/yo").using(put_yo))
             .build();
-        let root_handler = move |req: Request, mut res: Response| match router.find_handler(&req) {
-            Ok(handler) => handler(req, res),
-            Err(sc) => *res.status_mut() = sc,
-        };
+        let root_handler = move |req: Request, mut res: Response|
+          match router.find_handler(&req) {
+              Ok(handler) => handler(req, res),
+              Err(sc) => *res.status_mut() = sc,
+          };
         let addr = format!("127.0.0.1:{}", port);
         let server = Server::http(addr).unwrap().handle(root_handler).unwrap();
         AutoServer { listening: server }
