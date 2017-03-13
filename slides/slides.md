@@ -8,7 +8,9 @@ Alexander Torstling
 
 ```
 
-# What is Rust?
+# Background
+
+
 
 
 
