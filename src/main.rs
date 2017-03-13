@@ -14,20 +14,18 @@ struct Answer {
 }
 
 fn get_yo(req: &mut Request) -> IronResult<Response> {
-	let phrase = req.extensions.get::<Router>().unwrap().find("phrase").unwrap();
+    let phrase = req.extensions.get::<Router>().unwrap().find("phrase").unwrap();
     let ans = Answer { msg: format!("yo {}!", phrase).to_string() };
     let payload = json::encode(&ans).unwrap();
-	Ok(Response::with((status::Ok, payload)))
-}
-
-fn put_yo(_: &mut Request) -> IronResult<Response> {
-	Ok(Response::with((status::ImATeapot, "no")))
+    Ok(Response::with((status::Ok, payload)))
 }
 
 fn server(port: &str) -> Listening {
-	let mut router = Router::new();
+    let mut router = Router::new();
     router.get("/yo/:phrase", get_yo, "get_yo");
-    router.put("/yo", put_yo, "put_yo");
+    router.put("/yo",
+               |_: &mut Request| Ok(Response::with((status::ImATeapot, "no"))),
+               "put_yo");
     Iron::new(router).http(format!("localhost:{}", port)).unwrap()
 }
 
@@ -62,15 +60,16 @@ mod test {
 
     impl Drop for AutoServer {
         fn drop(&mut self) {
+            // Workaround for https://github.com/hyperium/hyper/issues/338
             self.listening.close().unwrap();
         }
     }
 
     #[test]
     fn http_get() {
-        let _server = AutoServer::new("9999");
+        let _server = AutoServer::new("9989");
         let client = Client::new();
-        let mut res = client.get("http://127.0.0.1:9999/yo/mtg_bootstrap").send().unwrap();
+        let mut res = client.get("http://127.0.0.1:9989/yo/mtg_bootstrap").send().unwrap();
         assert_eq!(res.status, hyper::Ok);
         let mut payload = String::new();
         res.read_to_string(&mut payload).unwrap();
@@ -81,7 +80,7 @@ mod test {
     fn http_put() {
         let _server = AutoServer::new("9994");
         let client = Client::new();
-        let res = client.put("http://127.0.0.1:9999/yo").send().unwrap();
+        let res = client.put("http://127.0.0.1:9994/yo").send().unwrap();
         assert_eq!(res.status, StatusCode::ImATeapot);
     }
 
@@ -99,11 +98,12 @@ mod test {
     fn http_get_multiple() {
         let _server = AutoServer::new("9997");
         let client = Client::new();
-        let (res1, (res2, res3)) = pcons(|| client.get("http://127.0.0.1:9997/yo/bigmama").send().unwrap(),
-                                         || {
-            pcons(|| client.get("http://127.0.0.1:9997/yo/wassa").send().unwrap(),
-                  || client.get("http://127.0.0.1:9997/yo/lilboy").send().unwrap())
-        });
+        let (res1, (res2, res3)) =
+            pcons(|| client.get("http://127.0.0.1:9997/yo/bigmama").send().unwrap(),
+                  || {
+                      pcons(|| client.get("http://127.0.0.1:9997/yo/wassa").send().unwrap(),
+                            || client.get("http://127.0.0.1:9997/yo/lilboy").send().unwrap())
+                  });
         assert_eq!(res1.status, hyper::Ok);
         assert_eq!(res2.status, hyper::Ok);
         assert_eq!(res3.status, hyper::Ok);
