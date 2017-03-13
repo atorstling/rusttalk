@@ -24,7 +24,7 @@ fn put_yo(_: Request, mut res: Response) {
     res.send(b"no").unwrap();
 }
 
-fn server(port: &str) -> Box<hyper::server::Listening> {
+fn server(port: &str) -> hyper::server::Listening {
     let router = RouterBuilder::new()
         .add(Route::get("/yo").using(get_yo))
         .add(Route::put("/yo").using(put_yo))
@@ -35,11 +35,11 @@ fn server(port: &str) -> Box<hyper::server::Listening> {
           Err(sc) => *res.status_mut() = sc,
       };
     let addr = format!("127.0.0.1:{}", port);
-    Box::new(Server::http(addr).unwrap().handle(root_handler).unwrap())
+    Server::http(addr).unwrap().handle(root_handler).unwrap()
 }
 
 fn main() {
-    let server = server("9999");
+    let _server = server("9999");
     println!("listening on port 9999");
     std::thread::park();
     panic!("spurious wakeup");
@@ -57,7 +57,7 @@ mod test {
     use std::boxed::FnBox;
 
     struct AutoServer {
-        listening: Box<Listening>,
+        listening: Listening,
     }
 
     impl AutoServer {
