@@ -3,7 +3,7 @@
 extern crate hyper;
 extern crate hyper_router;
 extern crate rustc_serialize;
-use hyper::server::{Server, Request, Response};
+use hyper::server::{Server, Request, Response, Listening};
 use hyper::status::StatusCode;
 use hyper_router::{Route, RouterBuilder};
 use rustc_serialize::json;
@@ -24,7 +24,7 @@ fn put_yo(_: Request, mut res: Response) {
     res.send(b"no").unwrap();
 }
 
-fn server(port: &str) -> hyper::server::Listening {
+fn server(port: &str) -> RunningServer {
     let router = RouterBuilder::new()
         .add(Route::get("/yo").using(get_yo))
         .add(Route::put("/yo").using(put_yo))
