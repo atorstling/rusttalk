@@ -4,3 +4,5 @@ clean:
 	cargo clean
 format:
 	cargo fmt
+slides:
+	slides/build.sh
