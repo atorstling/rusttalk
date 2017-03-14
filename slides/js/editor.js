@@ -78,7 +78,7 @@ function createElements(code) {
 		//runBtn.addEventListener("click", function() {
 	//		execCode(editor, resultArea);
 	//	});
-		runBtn.onclick = function() { alert('hello'); execCode(editor, resultArea); }
+		runBtn.onclick = function() { execCode(editor, resultArea); }
 		code.parentNode.insertBefore(runBtn, resetBtn);
 }
 

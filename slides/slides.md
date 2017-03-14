@@ -64,11 +64,11 @@ fn main() {
 
 * Started by Graydon Hoare 2006. OCaml
 * Mozilla 2009
-* Compiler Bootstrapped 2010
+* Self-hosting compiler in 2010
 
 # Goals
 
-* Find Alternative to C++ (at Mozilla?)
+* Find Alternative to C++ (at Mozilla)
   * Memory safety
   * Thread safety
   * Compilation model
@@ -79,7 +79,30 @@ fn main() {
 * Complex GCs
 * Different Paradigms
 * Not enough static type checks
-* Few with isolation, interference, concurrencey guarantee
+* Few with isolation, interference, concurrency guarantees
+
+# Main Selling Points
+
+* Memory safety without garbage collection (Novelish)
+* Concurrency without data races (Novelish)
+* Abstraction without overhead
+
+# Language Properties
+
+* System language
+* Static, strong, inferred typing
+* Compiled on LLVM
+* Concurrent
+* Imperative
+* Procedural
+* Functional
+  * First-class functions
+  * Pattern matching
+  * Ad-hoc polymorphism through Traits
+* Generics
+* Macros
+* No real Reflection
+
 
 # Compared to other Languages
 
@@ -117,18 +140,6 @@ string constants of type str like `"hej"`
 
 functions (first class): `fn main(){}`
 
-# Strings, Memory and the Stack
-
-String constants are of type `str`.
-A view into the data segment of the executable.
-`str` does not have a size, so it's not `Sized`.
-
-<script language="rust">
-
-Instead
-
-
-
 # Variable bindings
 
 <script language="rust">
@@ -144,6 +155,134 @@ fn main() {
   println!("3: {}", c);
 }
 </script>
+
+# Mutability
+
+<script language="rust">
+fn main() {
+  let a: u32 = 4711;  //FIXME
+  println!("{}",a);  
+  a = 4712;
+  println!("{}",a);  
+}
+</script>
+
+# References
+* Views into data owned by someone else
+
+## Types
+* `&`
+* `&mut`
+
+## Rules
+* A reference cannot outlive its referent
+* A mutable reference cannot be aliased
+
+# Immutable References 1
+
+Can have many immutable references
+
+<script language="rust">
+fn main() {
+  let a: u32 = 4711;
+  let b: &u32 = &a;  
+  let c: &u32 = &a;  
+  println!("{:?}", (a,b,c));  
+}
+</script>
+
+# Immutable References 2
+
+Can have many immutable references
+
+But cannot mutate while references are handed out
+
+<script language="rust">
+fn main() {
+  let mut a: u32 = 4711;
+  let b: &u32 = &a;  
+  let c: &u32 = &a;  
+  a = 4712;
+  println!("{:?}", (a,b,c));  
+}
+</script>
+
+
+
+# `str` and references
+
+String constants are of type `str`.
+
+Part of the data segment of the executable.
+
+Immutable. Have to refer to them by const reference
+
+<script language="rust">
+fn main() {
+  let a: str = "hej"; //FIXME
+  let b: &mut str = "på"; //FIXME
+  let c: &str = "dig";    
+  println!("{}", c);  
+}
+</script>
+
+# `String`s
+
+`String`s are mutable strings.
+
+<script language="rust">
+fn main() {
+  let a: String = String::from("hej");
+  let b: String = "på".to_string();
+  let c: String = a + &b;
+  println!("{}", c);  
+}
+</script>
+
+# Lifetimes, Automatic Destruction
+
+* Scopes
+* Destruction
+
+<script language="rust">
+fn main() {
+  let a = 32;    
+  {
+    let a = 47;
+    println!("inner: {}", a);
+  }
+  println!("outer: {}", a);
+}
+</script>
+
+# Ownership
+
+Data has
+
+* Only one owner.
+* Transfer ownership -Move or clone - Copy.
+
+# Copy
+
+<script language="rust">
+fn main() {
+  let a = 4711;  
+  let b: u32 = a;
+  println!("{}-{}", a, b);  
+}
+</script>
+
+# Move
+
+<script language="rust">
+fn main() {
+  let a = "hej".to_string();  
+  let b: String = a;
+  println!("{}", a); //FIXME
+}
+</script>
+
+
 
 # Function declarations
 
