@@ -86,6 +86,8 @@ fn main() {
 * Memory safety without garbage collection (Novelish)
 * Concurrency without data races (Novelish)
 * Abstraction without overhead
+* High-level language
+* Low-level control - `unsafe`
 
 # Language Properties
 
@@ -93,16 +95,30 @@ fn main() {
 * Static, strong, inferred typing
 * Compiled on LLVM
 * Concurrent
-* Imperative
-* Procedural
+* Imperative, Procedural
 * Functional
   * First-class functions
   * Pattern matching
   * Ad-hoc polymorphism through Traits
+  * Lambdas, Closures
+  * Iterators (map, flatmap, filter etc)
+
+# Language Properties 2
+
 * Generics
 * Macros
-* No real Reflection
+* FFI - C, C++, interop
+* `Cargo` complete solution for 
+  * setting up projects
+  * building 
+  * formatting
+  * testing
+  * sharing code
 
+# But
+
+* No Real Reflection
+* No Green Threads or Tasks
 
 # Compared to other Languages
 
@@ -138,7 +154,7 @@ tuples like `(1, true)`
 
 <script language="rust">
 fn main() {
-  let a: u32 = 4711;  
+  let a: u32 = 4711;
   println!("1: {}",a);
 
   let (b, c) = (42, 1337i32);
@@ -199,7 +215,8 @@ fn main() {
 
 # Move
 
-* Stack vs Heap
+* "Heavier" types
+* Don't implement `Copy`
 
 <script language="rust">
 fn main() {
@@ -219,13 +236,13 @@ fn main() {
 ## Rules
 * A reference cannot outlive its referent
 
-## Borrowing
+# Borrowing
 Taking a reference "borrows" the data.
 You can borrow for read or write. Still a borrow.
 
-You can have
+You can have EITHER
 
-* one or more references (&T) to a resource,
+* one or more immutable references (&T) to a resource OR
 * exactly one mutable reference (&mut T).
 
 # Immutable References - Can Have Many
@@ -237,35 +254,34 @@ Can have many immutable references
 <script language="rust">
 fn main() {
   let a: u32 = 4711;
-  let b: &u32 = &a;  
-  let c: &u32 = &a;  
-  println!("{:?}", (a,b,c));  
+  let b: &u32 = &a;
+  let c: &u32 = &a;
+  println!("{:?}", (a,b,c));
 }
 </script>
 
-# Immutable References - Cannot Mutate
+# Immutable References - Mutate
 
-But still cannot mutate while immutably borrowed
+You cannot mutate if borrowed. Even if only immutably borrowed
 
 <script language="rust">
 fn main() {
   let mut a: u32 = 4711;
-  let b: &u32 = &a;    
+  let b: &u32 = &a;
   a = 4712;
-  println!("{:?}", (a,b));  
+  println!("{:?}", (a,b));
 }
 </script>
 
 # Mutable References 2
 
-But still cannot mutate while immutably borrowed
+* Borrowing mutably "transfers access rights"
 
 <script language="rust">
 fn main() {
-  let mut a: u32 = 4711;
-  let b: &u32 = &a;    
-  a = 4712;
-  println!("{:?}", (a,b));  
+  let mut a: i64 = 4711;
+  let b: &mut i64 = &mut a;
+  let c = a; // FIXME
 }
 </script>
 
@@ -294,8 +310,8 @@ Immutable. Have to refer to them by const reference
 fn main() {
   let a: str = "hej"; //FIXME
   let b: &mut str = "på"; //FIXME
-  let c: &str = "dig";    
-  println!("{}", c);  
+  let c: &str = "dig";
+  println!("{}", c);
 }
 </script>
 
