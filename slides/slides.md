@@ -195,6 +195,8 @@ fn main() {
 * Sometimes data is copied instead -> Two pieces of data, two owners.
 * When owner goes out of scope, data will be freed.
 
+=> Automatic deallocation, no GC! 
+
 # Lifetimes, Automatic Destruction
 
 <script language="rust">
@@ -558,49 +560,124 @@ fn main() {
 }
 </script>
 
-# Generics
-
-Monomorphization
+# Generic Function Arguments
 
 <script language="rust">
-fn<T> add(a: T, b: T) {
-
+fn print<T: std::fmt::Display>(a: T, b: T) {
+  println!("{}-{}", a, b);
 }
+fn print2<T>(a: T, b: T) 
+  where T: std::fmt::Display + std::fmt::Debug
+{
+  println!("{}-{:?}", a, b);
+}
+
 fn main() {
-  add(
+  print("hej", 32); //FIXME
+  print2("hej", "hej");
 }
 </script>
 
-
-# Memory Safety
+# Generic Structs 
 
 <script language="rust">
+struct Wrapped<T> {
+  pub value: T
+}
+
 fn main() {
-  let mut a: u32 = 1;
-  let b: &mut u32 = &mut a;
+  let a = Wrapped{ value: "hej".to_string() };
+  let mut b = Wrapped{ value: 7 };
+  b = a; //FIXME
+}
+</script>
+
+# Back to Lifetimes and Ownership
+
+# Lifetimes and Functions - calling
+
+* Move
+
+<script language="rust">
+fn gimme(_: String) {
+}
+fn main() {
+  let a = String::from("a");
+  {
+    gimme(a); //FIXME
+  }
   println!("{}", a);
 }
 </script>
 
 
+# Lifetimes and Functions - Ref
 
-# Functions Restrictions
+* Borrow for the lifetime of call
 
-They must
+<script language="rust">
+fn gimme(_: &String) {
+}
+fn main() {
+  let mut a = String::from("a");
+  gimme(&a);
+  gimme(&mut a);
+  println!("{}", a);
+}
+</script>
 
-* Handover ownership OR
+# Lifetimes and Functions - Return
+
+Functions must
 
 * Declare how the lifetime of the return value
   relates to the lifetime of the in-parameters
 
 <script language="rust">
-fn gimme() -> &str {
-  "hej"
+fn unit(a: &str) -> &str {
+  a
 }
 fn main() {
-  println!("{}", gimme());
+  let a = unit("hej");
+  println!("{}", a);
 }
 </script>
+
+# Lifetimes and Functions - Return
+
+Functions must
+
+* Declare how the lifetime of the return value
+  relates to the lifetime of the in-parameters
+
+<script language="rust">
+fn unit<'a>(a: &'a str) -> &'a str {
+  a
+}
+fn main() {
+  let a = unit("hej");
+  println!("{}", a);
+}
+</script>
+
+# Lifetimes and Functions - Non-Automatic
+
+<script language="rust">
+struct Person { name: String }
+fn get_first_name(p1: & Person, _: &Person) -> &String { //FIXME
+  &p1.name
+}
+fn main() {
+  let p1 = Person { name: "Arne".to_string() };
+  let p2 = Person { name: "Ragnhild".to_string() };
+  let name = get_first_name(&p1, &p2);
+  println!("{}", name);
+}
+</script>
+
+# Concurrency
+
+# Build
 
 
 # Left
@@ -613,13 +690,13 @@ x No gc
 x Borrow Checker
 x Type inference
 Concurrency
-Generics
-Monomorphisation
-Closures
-Mut
-Structs
-Traits
-Memory safety without garbage collection
+x Generics
+x Monomorphisation
+x Closures
+x Mut
+x Structs
+x Traits
+x Memory safety without garbage collection
 Concurrency without data races
 Abstraction without overhead
 Tests parallel by default
@@ -627,38 +704,38 @@ Type aliases
 
 # Phone Notes
 
-No gc latencies
-Destructors
-Safety
+x No gc latencies
+x Destructors
+x Safety
 
-No gc
-Borrow checker
-Type inference
+x No gc
+x Borrow checker
+x Type inference
 Concurrency
-Generics
+x Generics
 
-monomorphisation ni
+x monomorphisation ni
 
 
-Mut
-Structs
-Traits
+x Mut
+x Structs
+x Traits
 
-Memory safety without garbage collection
+x Memory safety without garbage collection
 Concurrency without data races
-Inga
-This post begins exploring the third pillar:
+x Inga
+x This post begins exploring the third pillar:
 
-Abstraction without overhead.
+x Abstraction without overhead.
 
-"If" is an expr
+x "If" is an expr
 
 
-Mutable binding vs mutable reference
+x Mutable binding vs mutable reference
 
-let mut x = 4;
-let mut y = &mut x;
-x: MutBind -----> 0x0bc32: 4
-y: MutBind -----> mutBorrow ----> 0x0bc32: 4
+x let mut x = 4;
+x let mut y = &mut x;
+x x: MutBind -----> 0x0bc32: 4
+x y: MutBind -----> mutBorrow ----> 0x0bc32: 4
 
 First slide: http://venge.net/graydon/talks/intro-talk-2.pdf
