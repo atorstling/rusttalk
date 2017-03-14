@@ -163,9 +163,49 @@ The *binding* is mutable or not
 <script language="rust">
 fn main() {
   let a: u32 = 4711;  //FIXME
-  println!("{}",a);  
+  println!("{}",a);
   a = 4712;
-  println!("{}",a);  
+  println!("{}",a);
+}
+</script>
+
+# Ownership
+
+* All data is either owned by some binding or `static`.
+* There is only one owner of any given data.
+* Ownership can be transfered - Move
+* Sometimes data is copied instead -> Two pieces of data, two owners.
+* When owner goes out of scope, data will be freed.
+
+# Lifetimes, Automatic Destruction
+
+<script language="rust">
+fn main() {
+  let mut a = Vec::new();
+  a.push(1);
+  a.push(2);
+}
+</script>
+
+# Copy
+
+<script language="rust">
+fn main() {
+  let a = 4711;
+  let b: u32 = a;
+  println!("{}-{}", a, b);
+}
+</script>
+
+# Move
+
+* Stack vs Heap
+
+<script language="rust">
+fn main() {
+  let a = String::from("hej");
+  let b: String = a;
+  println!("{}", a); //FIXME
 }
 </script>
 
@@ -271,50 +311,6 @@ fn main() {
   println!("{}", c);  
 }
 </script>
-
-# Lifetimes, Automatic Destruction
-
-* Scopes
-* Destruction
-
-<script language="rust">
-fn main() {
-  let a = 32;    
-  {
-    let a = 47;
-    println!("inner: {}", a);
-  }
-  println!("outer: {}", a);
-}
-</script>
-
-# Ownership
-
-Data has
-
-* Only one owner.
-* Transfer ownership -Move or clone - Copy.
-
-# Copy
-
-<script language="rust">
-fn main() {
-  let a = 4711;  
-  let b: u32 = a;
-  println!("{}-{}", a, b);  
-}
-</script>
-
-# Move
-
-<script language="rust">
-fn main() {
-  let a = "hej".to_string();  
-  let b: String = a;
-  println!("{}", a); //FIXME
-}
-</script>
-
 
 
 # Function declarations
