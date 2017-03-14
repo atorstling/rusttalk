@@ -74,13 +74,6 @@ fn main() {
   * Compilation model
   * Module system, dependencies
 
-# Why not Existing Languages?
-
-* Complex GCs
-* Different Paradigms
-* Not enough static type checks
-* Few with isolation, interference, concurrency guarantees
-
 # Main Selling Points
 
 * Memory safety without garbage collection (Novelish)
@@ -105,6 +98,7 @@ fn main() {
 
 # Language Properties 2
 
+* OO-ish - visibility, Traits
 * Generics
 * Macros
 * FFI - C, C++, interop
@@ -119,6 +113,15 @@ fn main() {
 
 * No Real Reflection
 * No Green Threads or Tasks
+
+# Safety
+
+* No wild pointers.
+* No null pointers.
+* Immutable by default.
+* Pure by default
+* Bounds-checked indexing
+* Shared state is enforced to be threadsafe
 
 # Compared to other Languages
 
@@ -179,7 +182,6 @@ The *binding* is mutable or not
 <script language="rust">
 fn main() {
   let a: u32 = 4711;  //FIXME
-  println!("{}",a);
   a = 4712;
   println!("{}",a);
 }
@@ -187,7 +189,7 @@ fn main() {
 
 # Ownership
 
-* All data is either owned by some binding or `static`.
+* All data is either `static` or owned by some binding.
 * There is only one owner of any given data.
 * Ownership can be transfered - Move
 * Sometimes data is copied instead -> Two pieces of data, two owners.
@@ -285,24 +287,32 @@ fn main() {
 }
 </script>
 
-# Mutability 2
+# Undo Mutability 
 
-But you cannot "undo" immutability
+You cannot "undo" immutability
 
 <script language="rust">
 fn main() {
-    let a: i32 = 47;
-    let b: &mut i32 = &a;
+    let a: i32 = 47; // FIXME
+    let b: &mut i32 = &mut a;
     *b = 48;
 }
 </script>
 
+# References - Summary
 
-# `str` and references
+* You can share variables through references
+* Writing to a variable behaves like read/write locks
+  * Write is exclusive
+  * Read is concurrent
+
+# Important Data Types and Constructs
+
+# `str`
 
 String constants are of type `str`.
 
-Part of the data segment of the executable.
+`static` - part of the data segment of the executable.
 
 Immutable. Have to refer to them by const reference
 
@@ -317,49 +327,58 @@ fn main() {
 
 # `String`s
 
-`String`s are mutable strings.
+`String`s are mutable.
 
 <script language="rust">
 fn main() {
-  let a: String = String::from("hej");
-  let b: String = "på".to_string();
-  let c: String = a + &b;
-  println!("{}", c);  
+  let mut a: String = String::from("hej");
+  a.push_str(" på dig");
+  println!("{}", a);
 }
 </script>
 
-
-# Function declarations
-
-<script language="rust">
-fn square(a: u32) -> u32 {
-  a * a; // FIXME
-}
-fn main() {  
-  println!("{}", square(10));
-}
-</script>
-
-# Conditionals
+# If Statement
 
 <script language="rust">
 fn main() {
   if 0 < 1 {
     println!("hej");
   }
-
-  println!("{}", bigger(3, 2));
-
-  let x = if 1 > 0 { 4 } else { 5 };
-  println!("{}", x);  
 }
+</script>
 
-fn bigger(a: u32, b: u32) -> String {
-  if a > b {
-    "yes".to_string()
-  } else {
-    "no".to_string()
+# If Statement is Expression
+
+<script language="rust">
+fn main() {
+  let x = if 1 > 0 { 4 } else { 5 };
+  println!("{}", x);
+}
+</script>
+
+
+# Functions
+
+<script language="rust">
+fn square(a: u32) -> u32 {
+  a * a; // FIXME
+}
+fn main() {
+  println!("{}", square(10));
+}
+</script>
+
+# Functions Early Return
+
+<script language="rust">
+fn is_neg(a: i32) -> String {
+  if a < 0 {
+    return String::from("yes");
   }
+  String::from("no")
+}
+fn main() {
+  println!("{}", is_neg(0));
 }
 </script>
 
@@ -367,34 +386,191 @@ fn bigger(a: u32, b: u32) -> String {
 
 <script language="rust">
 fn main() {
-  let a = ("hej", "hå");
+  let a : (&str, u32) = ("hej", 43);
   println!("{}{}", a.0, a.1);
+}
+</script>
 
-  fn test(a: u32) -> (u32, u32) {
-    (a+1, a+2)
-  }
-  let b = test(4);
-  println!("{:?}", b)
+# Arrays
+
+<script language="rust">
+fn main() {
+  let xs: [i32; 5] = [0, 1, 2, 3, 4];
+  let ys: [i32; 5] = [77; 5];
+  println!("{:?}{:?}", xs, ys);
 }
 </script>
 
 # Structs
 
 <script language="rust">
+#[derive(Debug)]
+struct A {
+  x: String,
+  y: f64
+}
 
+fn main() {
+  let a = A{ x: "hej".to_string(), y: 7.0 };
+  println!("{:?}", a);
+}
+</script>
+
+# Tuple Structs
+<script language="rust">
+#[test]
+fn test() {
+  #[derive(Debug)]
+  struct Color(u32, u32, u32);
+  let a = Color(1,2,3);
+  assert_eq!(format!("{:?}", a), "Color(1, 2, 3)");
+}
 </script>
 
 # Enums
 
-<script language="rust">
-enum Animal {
-  Horse(tail_length_mm: u32),
-  Duck(quackiness_dba: f64, diving: bool)
+Algebraic. A.k.a Case class, Data
 
+<script language="rust">
+#[derive(Debug)]
+enum Animal {
+  Horse { tail_length_mm: u32 },
+  Moose(i32,u64),
+  Duck { quackiness_dba: f64, diving: bool },
+  Snake
+}
+fn main() {
+  let (a, b) = (Animal::Snake, 
+                Animal::Duck { quackiness_dba : 7.0, diving : false });
+  let c: Animal = Animal::Moose(46,46);
+  let d = Animal::Horse { tail_length_mm: 16 };
+  println!("{:?}", (a, b, c, d));
 }
 </script>
 
-# Main Features
+# Match
+
+<script language="rust">
+fn main() {
+  let x = 5;
+  match x {
+    1 | 2 => println!("small"),
+    _ => println!("big")
+  }
+}
+</script>
+
+# Match Destructuring
+
+<script language="rust">
+enum Thing {
+  Shoesize(u32),
+  Coord { x: u32, y: u32 }
+}
+
+fn main() {
+  let x: Thing = Thing::Coord { x: 13, y:47 };
+  let _y = Thing::Shoesize(14);
+  match x {
+    Thing::Shoesize(s) => println!("shoesize {}", s),
+    Thing::Coord { x, y } => println!("[{}, {}]", x, y)
+  }
+}
+</script>
+
+# Member Functions
+
+<script language="rust">
+
+struct Person { age: u32 }
+
+impl Person {
+  fn print(&self) {
+    println!("A person aged {}", self.age);
+  }
+}
+fn main() {
+  Person { age: 14 }.print();
+}
+</script>
+
+
+# Traits
+
+* Interfaces, typeclasses
+* Monomorphization
+
+<script language="rust">
+trait Printable {
+  fn print(&self);
+}
+
+struct Person { age: u32 }
+
+impl Printable for Person {
+  fn print(&self) {
+    println!("A person aged {}", self.age);
+  }
+}
+
+impl Printable for u32 {
+  fn print(&self) {
+    println!("An int with value {}", self);
+  }
+}
+
+fn main() {
+  Person { age: 14 }.print();
+  13.print();
+}
+</script>
+
+# Closures
+
+<script language="rust">
+fn main() {
+  let mut x = String::from("hej");
+  {
+    let mut append = | s: &str | { x.push_str(s); };
+    append("san");
+  }
+  println!("{}", x);
+}
+</script>
+
+# Destructors
+
+<script language="rust">
+
+struct A {}
+
+impl Drop for A {
+  fn drop(&mut self) {
+    println!("I am the weakest link, goodbye!");
+  }
+}
+
+fn main() {
+  {
+    let _a = A{};
+  }
+  println!("Carry on!");
+}
+</script>
+
+# Generics
+
+Monomorphization
+
+<script language="rust">
+fn<T> add(a: T, b: T) {
+
+}
+fn main() {
+  add(
+}
+</script>
+
 
 # Memory Safety
 
@@ -406,15 +582,36 @@ fn main() {
 }
 </script>
 
+
+
+# Functions Restrictions
+
+They must
+
+* Handover ownership OR
+
+* Declare how the lifetime of the return value
+  relates to the lifetime of the in-parameters
+
+<script language="rust">
+fn gimme() -> &str {
+  "hej"
+}
+fn main() {
+  println!("{}", gimme());
+}
+</script>
+
+
 # Left
 
-Deconstruction
-Everything is an expression
-Desctructors
-Safety
-No gc
-Borrow Checker
-Type inference
+x Deconstruction
+x Everything is an expression
+x Desctructors
+x Safety
+x No gc
+x Borrow Checker
+x Type inference
 Concurrency
 Generics
 Monomorphisation
