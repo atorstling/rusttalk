@@ -132,13 +132,7 @@ and the unit type `()`, whose only value is also `()`
 
 arrays like `[1, 2, 3]`
 
-slices like `&[char]`
-
 tuples like `(1, true)`
-
-string constants of type str like `"hej"`
-
-functions (first class): `fn main(){}`
 
 # Variable bindings
 
@@ -149,14 +143,22 @@ fn main() {
 
   let (b, c) = (42, 1337i32);
   println!("2: {}-{}", b, c);
-
-  let c: u32;
-  // c = 15; // FIXME
-  println!("3: {}", c);
 }
 </script>
 
-# Mutability
+# Prevent Read of Uninitialized
+
+<script language="rust">
+fn main() {
+  let c: u32;
+  // c = 15; // FIXME
+  println!("{}", c);
+}
+</script>
+
+# Mutability 1
+
+The *binding* is mutable or not
 
 <script language="rust">
 fn main() {
@@ -176,11 +178,21 @@ fn main() {
 
 ## Rules
 * A reference cannot outlive its referent
-* A mutable reference cannot be aliased
 
-# Immutable References 1
+## Borrowing
+Taking a reference "borrows" the data.
+You can borrow for read or write. Still a borrow.
+
+You can have
+
+* one or more references (&T) to a resource,
+* exactly one mutable reference (&mut T).
+
+# Immutable References - Can Have Many
 
 Can have many immutable references
+
+-- Borrow immutably many times
 
 <script language="rust">
 fn main() {
@@ -191,22 +203,43 @@ fn main() {
 }
 </script>
 
-# Immutable References 2
+# Immutable References - Cannot Mutate
 
-Can have many immutable references
-
-But cannot mutate while references are handed out
+But still cannot mutate while immutably borrowed
 
 <script language="rust">
 fn main() {
   let mut a: u32 = 4711;
-  let b: &u32 = &a;  
-  let c: &u32 = &a;  
+  let b: &u32 = &a;    
   a = 4712;
-  println!("{:?}", (a,b,c));  
+  println!("{:?}", (a,b));  
 }
 </script>
 
+# Mutable References 2
+
+But still cannot mutate while immutably borrowed
+
+<script language="rust">
+fn main() {
+  let mut a: u32 = 4711;
+  let b: &u32 = &a;    
+  a = 4712;
+  println!("{:?}", (a,b));  
+}
+</script>
+
+# Mutability 2
+
+But you cannot "undo" immutability
+
+<script language="rust">
+fn main() {
+    let a: i32 = 47;
+    let b: &mut i32 = &a;
+    *b = 48;
+}
+</script>
 
 
 # `str` and references
