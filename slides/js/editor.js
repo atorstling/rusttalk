@@ -74,9 +74,11 @@ function createElements(code) {
 		var runBtn = document.createElement("button");
 		runBtn.innerHTML = "Run";
 		runBtn.className = "run-button";
-		runBtn.addEventListener("click", function() {
-			execCode(editor, resultArea);
-		});
+		runBtn.accessKey = "r";
+		//runBtn.addEventListener("click", function() {
+	//		execCode(editor, resultArea);
+	//	});
+		runBtn.onclick = function() { alert('hello'); execCode(editor, resultArea); }
 		code.parentNode.insertBefore(runBtn, resetBtn);
 }
 

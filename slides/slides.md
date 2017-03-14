@@ -95,27 +95,39 @@ fn main() {
 
 # Primitives
 
-signed integers: i8, i16, i32, i64 and isize (pointer size)
+signed integers: `i8`, `i16`, `i32`, `i64` and `isize` (pointer size)
 
-unsigned integers: u8, u16, u32, u64 and usize (pointer size)
+unsigned integers: `u8`, `u16`, `u32`, `u64` and `usize` (pointer size)
 
-floating point: f32, f64
+floating point: `f32`, `f64`
 
-char Unicode scalar values like 'a', 'å' and '∞' (4 bytes each)
+char Unicode scalar values like `'a'`, `'å'` and `'∞'` (4 bytes each)
 
-bool either true or false
+bool either `true` or `false`
 
-and the unit type (), whose only value is also ()
+and the unit type `()`, whose only value is also `()`
 
-arrays like [1, 2, 3]
+arrays like `[1, 2, 3]`
 
-slices like &[char]
+slices like `&[char]`
 
-tuples like (1, true)
+tuples like `(1, true)`
 
-string constants of type str like "hej"
+string constants of type str like `"hej"`
 
-functions (first class): fn main(){}
+functions (first class): `fn main(){}`
+
+# Strings, Memory and the Stack
+
+String constants are of type `str`.
+A view into the data segment of the executable.
+`str` does not have a size, so it's not `Sized`.
+
+<script language="rust">
+
+Instead
+
+
 
 # Variable bindings
 
@@ -128,7 +140,7 @@ fn main() {
   println!("2: {}-{}", b, c);
 
   let c: u32;
-  // c = 15;
+  // c = 15; // FIXME
   println!("3: {}", c);
 }
 </script>
@@ -137,10 +149,33 @@ fn main() {
 
 <script language="rust">
 fn square(a: u32) -> u32 {
-  a * a
+  a * a; // FIXME
 }
 fn main() {  
   println!("{}", square(10));
+}
+</script>
+
+# Conditionals
+
+<script language="rust">
+fn main() {
+  if 0 < 1 {
+    println!("hej");
+  }
+
+  println!("{}", bigger(3, 2));
+
+  let x = if 1 > 0 { 4 } else { 5 };
+  println!("{}", x);  
+}
+
+fn bigger(a: u32, b: u32) -> String {
+  if a > b {
+    "yes".to_string()
+  } else {
+    "no".to_string()
+  }
 }
 </script>
 
@@ -148,9 +183,21 @@ fn main() {
 
 <script language="rust">
 fn main() {
-  let a = ("hej", "hå")
-  println!("{}{}", a.0, )
+  let a = ("hej", "hå");
+  println!("{}{}", a.0, a.1);
+
+  fn test(a: u32) -> (u32, u32) {
+    (a+1, a+2)
+  }
+  let b = test(4);
+  println!("{:?}", b)
 }
+</script>
+
+# Structs
+
+<script language="rust">
+
 </script>
 
 # Enums
@@ -174,3 +221,63 @@ fn main() {
   println!("{}", a);
 }
 </script>
+
+# Left
+
+Deconstruction
+Everything is an expression
+Desctructors
+Safety
+No gc
+Borrow Checker
+Type inference
+Concurrency
+Generics
+Monomorphisation
+Closures
+Mut
+Structs
+Traits
+Memory safety without garbage collection
+Concurrency without data races
+Abstraction without overhead
+Tests parallel by default
+Type aliases
+
+# Phone Notes
+
+No gc latencies
+Destructors
+Safety
+
+No gc
+Borrow checker
+Type inference
+Concurrency
+Generics
+
+monomorphisation ni
+
+
+Mut
+Structs
+Traits
+
+Memory safety without garbage collection
+Concurrency without data races
+Inga
+This post begins exploring the third pillar:
+
+Abstraction without overhead.
+
+"If" is an expr
+
+
+Mutable binding vs mutable reference
+
+let mut x = 4;
+let mut y = &mut x;
+x: MutBind -----> 0x0bc32: 4
+y: MutBind -----> mutBorrow ----> 0x0bc32: 4
+
+First slide: http://venge.net/graydon/talks/intro-talk-2.pdf
