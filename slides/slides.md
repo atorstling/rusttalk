@@ -65,6 +65,8 @@ fn main() {
 * Started by Graydon Hoare 2006. OCaml
 * Mozilla 2009
 * Self-hosting compiler in 2010
+* 1.0 in May of 2015 
+* Now 1.15 (Mar 2017)
 
 # Goals
 
@@ -81,6 +83,15 @@ fn main() {
 * Abstraction without overhead
 * High-level language
 * Low-level control - `unsafe`
+
+# Usages
+
+* Servo. Parallell Browser Rendering Engine by Mozilla
+* Parts of Firefox
+* Dropbox
+* Npm
+* Samsung (IoT)
+
 
 # Language Properties
 
@@ -404,15 +415,6 @@ fn main() {
 }
 </script>
 
-# Tuples
-
-<script language="rust">
-fn main() {
-  let a : (&str, u32) = ("hej", 43);
-  println!("{}{}", a.0, a.1);
-}
-</script>
-
 # Structs
 
 <script language="rust">
@@ -474,6 +476,72 @@ fn main() {
   13.print();
 }
 </script>
+
+# Closures
+
+<script language="rust">
+fn main() {
+  let mut x = String::from("hej");
+  {
+    let mut append = | s: &str | { x.push_str(s); };
+    append("san");
+  }
+  println!("{}", x);
+}
+</script>
+
+# Generic Function Arguments
+
+<script language="rust">
+fn print<T: std::fmt::Display>(a: T, b: T) {
+  println!("{}-{}", a, b);
+}
+fn print2<T>(a: T, b: T) 
+  where T: std::fmt::Display + std::fmt::Debug
+{
+  println!("{}-{:?}", a, b);
+}
+
+fn main() {
+  print("hej", 32); //FIXME
+  print2("hej", "hej");
+}
+</script>
+
+
+# First-class Functions and Closures
+
+<script language="rust">
+fn plus_one(a: u32) -> u32 {
+  a + 1
+}
+
+fn do_twice(f: fn(u32) -> u32, i: u32) -> u32 {
+  f(f(i))
+}
+
+fn do_twice_2<T: Fn(u32) -> u32>(f: T, i: u32) -> u32 {
+  f(f(i))
+}
+
+
+fn main() {
+  let _ref: fn(u32) -> u32 = plus_one;
+  println!("{}", do_twice(plus_one, 1));
+  println!("{}", do_twice_2(plus_one, 1));
+  println!("{}", do_twice(| i | { i * 2 }, 4)); // FIXME
+}
+</script>
+
+# Tuples
+
+<script language="rust">
+fn main() {
+  let a : (&str, u32) = ("hej", 43);
+  println!("{}{}", a.0, a.1);
+}
+</script>
+
 
 # Back to Lifetimes and Ownership
 
@@ -559,6 +627,86 @@ fn main() {
 </script>
 
 # Concurrency
+
+# Threading - Basics
+
+<script language="rust">
+use std::thread;
+
+fn main() {
+  let ta = thread::spawn(|| { println!("in a"); "package from a" });
+  println!("in main");
+  println!("{}", ta.join().unwrap());
+}
+</script>
+
+# Threading - Sharing Values
+
+* By Ref
+
+<script language="rust">
+use std::thread;
+
+fn main() {
+  let i = 3;
+  let ta = thread::spawn(|| { println!("a{}", i) }); // FIXME
+  ta.join().unwrap();
+}
+</script>
+
+
+# Threading - Mutable Values
+
+* By Ref
+
+<script language="rust">
+use std::thread;
+
+fn main() {
+  let mut i = 3;
+  let ta = thread::spawn(|| { i += 1 }); 
+  println!("i: {}", i);
+}
+</script>
+
+
+# Threading - Mutable Values
+
+```
+extern crate crossbeam;
+
+fn main() {
+  let mut i = 3;
+  crossbeam::scope(|scope| {
+    scope.spawn(|| { i += 1; });
+    // ADD ONE
+  });
+  println!("i:{}", i);
+}
+```
+
+# Threading - Mutex
+
+```
+extern crate crossbeam;
+use std::sync::Mutex;
+
+fn main() {
+  let m = Mutex::new(3);
+  crossbeam::scope(|scope| {
+    scope.spawn(|| { 
+      let mut lock = m.lock().unwrap();
+      *lock += 1; 
+    });
+    scope.spawn(|| { 
+      let mut lock = m.lock().unwrap();
+      *lock += 1; 
+    });
+  });
+  println!("i:{}", *m.lock().unwrap());
+}
+```
+
 
 # Build
 
@@ -648,19 +796,6 @@ fn main() {
 }
 </script>
 
-# Closures
-
-<script language="rust">
-fn main() {
-  let mut x = String::from("hej");
-  {
-    let mut append = | s: &str | { x.push_str(s); };
-    append("san");
-  }
-  println!("{}", x);
-}
-</script>
-
 # Destructors
 
 <script language="rust">
@@ -681,24 +816,6 @@ fn main() {
 }
 </script>
 
-# Generic Function Arguments
-
-<script language="rust">
-fn print<T: std::fmt::Display>(a: T, b: T) {
-  println!("{}-{}", a, b);
-}
-fn print2<T>(a: T, b: T) 
-  where T: std::fmt::Display + std::fmt::Debug
-{
-  println!("{}-{:?}", a, b);
-}
-
-fn main() {
-  print("hej", 32); //FIXME
-  print2("hej", "hej");
-}
-</script>
-
 # Generic Structs 
 
 <script language="rust">
@@ -712,6 +829,7 @@ fn main() {
   b = a; //FIXME
 }
 </script>
+
 
 
 # Left

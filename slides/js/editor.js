@@ -11,31 +11,46 @@ window.addEventListener('load', function () {
 	}
 
 	function execCode(editor, resultArea) {
-                var cod = editor.getValue()
+                var cod = editor.getValue();
 		var req = new XMLHttpRequest();
+                var isTest = cod.includes("#[test]");                
+                
 		var payload = {
 			version: "stable",
 			optimize: "0",
 			code: cod,
-			test: cod.includes("#[test]")
+			test: isTest
 		};
 		req.open('POST', "https://play.rust-lang.org/evaluate.json", true);
+                
+/*
+                var payload = {
+			channel: "stable",                        
+                        code: cod,
+                        crateType: "bin",
+                        mode: "debug",			
+			test: false
+		};
+		req.open('POST', "http://play.integer32.com/execute", true);
+*/
+                
 		req.onload = function(e) {
 			if (req.readyState !== 4) {
 				return;
 			}
 			if (req.status === 200) {
 				var response = JSON.parse(req.response);
-
-				showResult(resultArea, response.result);
+                                showResult(resultArea, response.result);
+				//showResult(resultArea, response.stderr + response.stdout);
 			} else {
 				showResult(resultArea,
 					"Request failed with code: " + req.status);
 			}
 		};
 		req.onerror = function(e) {
+                                console.log(e);
 				showResult(resultArea,
-					"Failed to connect to the Playpen server.");
+					"Failed to connect to the Playpen server: " + e);
 		}
 		req.setRequestHeader("Content-Type", "application/json");
 		req.send(JSON.stringify(payload));
