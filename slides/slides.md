@@ -709,12 +709,14 @@ fn mutate_in_threads() {
 }
 ```
 
-# Threading - More
+# Threading - Conclusions
 
+## Thread safety guaranteed by the compiler
+
+## There is more
 * Atomics
 * Reference Counted
 * Channels
-
 
 # Build
 
@@ -839,7 +841,14 @@ fn main() {
 }
 </script>
 
+# Type Aliases
 
+<script language="rust">
+type Alex = String;
+fn main() {
+  let _a: Alex = String::from("Alex");
+}
+</script>
 
 # Left
 
