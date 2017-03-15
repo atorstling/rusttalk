@@ -850,50 +850,82 @@ fn main() {
 }
 </script>
 
+# Thank You
+
+<img src="img/stackoverflow.png" alt="stackoverflow" style="width: 400px;"/>
+![](img/most_loved.png "Most Loved")
+
 # Left
 
 x Deconstruction
+
 x Everything is an expression
+
 x Desctructors
+
 x Safety
+
 x No gc
+
 x Borrow Checker
+
 x Type inference
+
 x Concurrency
+
 x Generics
+
 x Monomorphisation
+
 x Closures
+
 x Mut
+
 x Structs
+
 x Traits
+
 x Memory safety without garbage collection
+
 x Concurrency without data races
+
 x Abstraction without overhead
+
 Tests parallel by default
+
 - Type aliases
 
 # Phone Notes
 
 x No gc latencies
+
 x Destructors
+
 x Safety
 
 x No gc
+
 x Borrow checker
+
 x Type inference
+
 x Concurrency
+
 x Generics
 
 x monomorphisation ni
 
-
 x Mut
+
 x Structs
+
 x Traits
 
 x Memory safety without garbage collection
 Concurrency without data races
+
 x Inga
+
 x This post begins exploring the third pillar:
 
 x Abstraction without overhead.
@@ -904,8 +936,11 @@ x "If" is an expr
 x Mutable binding vs mutable reference
 
 x let mut x = 4;
+
 x let mut y = &mut x;
+
 x x: MutBind -----> 0x0bc32: 4
+
 x y: MutBind -----> mutBorrow ----> 0x0bc32: 4
 
 First slide: http://venge.net/graydon/talks/intro-talk-2.pdf
