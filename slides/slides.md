@@ -366,6 +366,18 @@ fn main() {
 }
 </script>
 
+# Loops
+
+<script language="rust">
+fn main() {
+  let a = vec![1, 2, 3, 4];
+  for i in a {
+    if i % 2 == 0 {
+      println!("{}", i);
+    }
+  }
+}
+</script>
 
 # Functions
 
@@ -401,16 +413,6 @@ fn main() {
 }
 </script>
 
-# Arrays
-
-<script language="rust">
-fn main() {
-  let xs: [i32; 5] = [0, 1, 2, 3, 4];
-  let ys: [i32; 5] = [77; 5];
-  println!("{:?}{:?}", xs, ys);
-}
-</script>
-
 # Structs
 
 <script language="rust">
@@ -423,68 +425,6 @@ struct A {
 fn main() {
   let a = A{ x: "hej".to_string(), y: 7.0 };
   println!("{:?}", a);
-}
-</script>
-
-# Tuple Structs
-<script language="rust">
-#[test]
-fn test() {
-  #[derive(Debug)]
-  struct Color(u32, u32, u32);
-  let a = Color(1,2,3);
-  assert_eq!(format!("{:?}", a), "Color(1, 2, 3)");
-}
-</script>
-
-# Enums
-
-Algebraic. A.k.a Case class, Data
-
-<script language="rust">
-#[derive(Debug)]
-enum Animal {
-  Horse { tail_length_mm: u32 },
-  Moose(i32,u64),
-  Duck { quackiness_dba: f64, diving: bool },
-  Snake
-}
-fn main() {
-  let (a, b) = (Animal::Snake, 
-                Animal::Duck { quackiness_dba : 7.0, diving : false });
-  let c: Animal = Animal::Moose(46,46);
-  let d = Animal::Horse { tail_length_mm: 16 };
-  println!("{:?}", (a, b, c, d));
-}
-</script>
-
-# Match
-
-<script language="rust">
-fn main() {
-  let x = 5;
-  match x {
-    1 | 2 => println!("small"),
-    _ => println!("big")
-  }
-}
-</script>
-
-# Match Destructuring
-
-<script language="rust">
-enum Thing {
-  Shoesize(u32),
-  Coord { x: u32, y: u32 }
-}
-
-fn main() {
-  let x: Thing = Thing::Coord { x: 13, y:47 };
-  let _y = Thing::Shoesize(14);
-  match x {
-    Thing::Shoesize(s) => println!("shoesize {}", s),
-    Thing::Coord { x, y } => println!("[{}, {}]", x, y)
-  }
 }
 </script>
 
@@ -511,11 +451,11 @@ fn main() {
 * Monomorphization
 
 <script language="rust">
+struct Person { age: u32 }
+
 trait Printable {
   fn print(&self);
 }
-
-struct Person { age: u32 }
 
 impl Printable for Person {
   fn print(&self) {
@@ -532,71 +472,6 @@ impl Printable for u32 {
 fn main() {
   Person { age: 14 }.print();
   13.print();
-}
-</script>
-
-# Closures
-
-<script language="rust">
-fn main() {
-  let mut x = String::from("hej");
-  {
-    let mut append = | s: &str | { x.push_str(s); };
-    append("san");
-  }
-  println!("{}", x);
-}
-</script>
-
-# Destructors
-
-<script language="rust">
-
-struct A {}
-
-impl Drop for A {
-  fn drop(&mut self) {
-    println!("I am the weakest link, goodbye!");
-  }
-}
-
-fn main() {
-  {
-    let _a = A{};
-  }
-  println!("Carry on!");
-}
-</script>
-
-# Generic Function Arguments
-
-<script language="rust">
-fn print<T: std::fmt::Display>(a: T, b: T) {
-  println!("{}-{}", a, b);
-}
-fn print2<T>(a: T, b: T) 
-  where T: std::fmt::Display + std::fmt::Debug
-{
-  println!("{}-{:?}", a, b);
-}
-
-fn main() {
-  print("hej", 32); //FIXME
-  print2("hej", "hej");
-}
-</script>
-
-# Generic Structs 
-
-<script language="rust">
-struct Wrapped<T> {
-  pub value: T
-}
-
-fn main() {
-  let a = Wrapped{ value: "hej".to_string() };
-  let mut b = Wrapped{ value: 7 };
-  b = a; //FIXME
 }
 </script>
 
@@ -686,6 +561,157 @@ fn main() {
 # Concurrency
 
 # Build
+
+
+# More
+
+# Arrays
+
+<script language="rust">
+fn main() {
+  let xs: [i32; 5] = [0, 1, 2, 3, 4];
+  let ys: [i32; 5] = [77; 5];
+  println!("{:?}{:?}", xs, ys);
+}
+</script>
+
+# Tuple Structs
+<script language="rust">
+#[test]
+fn test() {
+  #[derive(Debug)]
+  struct Color(u32, u32, u32);
+  let a = Color(1,2,3);
+  assert_eq!(format!("{:?}", a), "Color(1, 2, 3)");
+}
+</script>
+
+# Enums
+
+Algebraic. A.k.a Case class, Data
+
+<script language="rust">
+#[derive(Debug)]
+enum Animal {
+  Horse { tail_length_mm: u32 },
+  Moose(i32,u64),
+  Duck { quackiness_dba: f64, diving: bool },
+  Snake
+}
+fn main() {
+  let (a, b) = (Animal::Snake, 
+                Animal::Duck { quackiness_dba : 7.0, diving : false });
+  let c: Animal = Animal::Moose(46,46);
+  let d = Animal::Horse { tail_length_mm: 16 };
+  println!("{:?}", (a, b, c, d));
+}
+</script>
+
+# Match
+
+<script language="rust">
+fn main() {
+  let x = 5;
+  match x {
+    1 | 2 => println!("small"),
+    _ => println!("big")
+  }
+}
+</script>
+
+# Match Destructuring
+
+<script language="rust">
+enum Thing {
+  Shoesize(u32),
+  Coord { x: u32, y: u32 }
+}
+
+fn main() {
+  let x: Thing = Thing::Coord { x: 13, y:47 };
+  let _y = Thing::Shoesize(14);
+  match x {
+    Thing::Shoesize(s) => println!("shoesize {}", s),
+    Thing::Coord { x, y } => println!("[{}, {}]", x, y)
+  }
+}
+</script>
+
+# Iterators
+
+<script language="rust">
+fn main() {
+  let i = (1..10)
+  .filter(|i| { i % 2 == 0 })
+  .fold(0, | acc, i | { acc + i });
+  println!("{}", i);
+}
+</script>
+
+# Closures
+
+<script language="rust">
+fn main() {
+  let mut x = String::from("hej");
+  {
+    let mut append = | s: &str | { x.push_str(s); };
+    append("san");
+  }
+  println!("{}", x);
+}
+</script>
+
+# Destructors
+
+<script language="rust">
+
+struct A {}
+
+impl Drop for A {
+  fn drop(&mut self) {
+    println!("I am the weakest link, goodbye!");
+  }
+}
+
+fn main() {
+  {
+    let _a = A{};
+  }
+  println!("Carry on!");
+}
+</script>
+
+# Generic Function Arguments
+
+<script language="rust">
+fn print<T: std::fmt::Display>(a: T, b: T) {
+  println!("{}-{}", a, b);
+}
+fn print2<T>(a: T, b: T) 
+  where T: std::fmt::Display + std::fmt::Debug
+{
+  println!("{}-{:?}", a, b);
+}
+
+fn main() {
+  print("hej", 32); //FIXME
+  print2("hej", "hej");
+}
+</script>
+
+# Generic Structs 
+
+<script language="rust">
+struct Wrapped<T> {
+  pub value: T
+}
+
+fn main() {
+  let a = Wrapped{ value: "hej".to_string() };
+  let mut b = Wrapped{ value: 7 };
+  b = a; //FIXME
+}
+</script>
 
 
 # Left
