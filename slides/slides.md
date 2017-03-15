@@ -709,6 +709,13 @@ fn mutate_in_threads() {
 }
 ```
 
+# Threading - More
+
+* Atomics
+* Reference Counted
+* Channels
+
+
 # Build
 
 ## Demo
