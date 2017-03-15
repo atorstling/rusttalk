@@ -477,7 +477,7 @@ fn main() {
 
 # Back to Lifetimes and Ownership
 
-# Lifetimes and Functions - calling
+# Lifetimes and Functions - Calling
 
 * Move
 
