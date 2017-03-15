@@ -187,6 +187,14 @@ fn main() {
 }
 </script>
 
+# Memory Safety without GC
+
+How?
+
+* Lifetimes
+* Ownership
+* Borrowing
+
 # Ownership
 
 * All data is either `static` or owned by some binding.
