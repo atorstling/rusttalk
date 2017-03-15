@@ -642,7 +642,8 @@ fn main() {
 
 # Threading - Sharing Values
 
-* By Ref
+* Ref-Value
+* Send
 
 <script language="rust">
 use std::thread;
@@ -654,10 +655,9 @@ fn main() {
 }
 </script>
 
-
 # Threading - Mutable Values
 
-* By Ref
+* Scoping Problem - Crossbeam
 
 <script language="rust">
 use std::thread;
@@ -666,6 +666,7 @@ fn main() {
   let mut i = 3;
   let ta = thread::spawn(|| { i += 1 }); 
   println!("i: {}", i);
+  //CANT-FIX
 }
 </script>
 
@@ -691,7 +692,8 @@ fn main() {
 extern crate crossbeam;
 use std::sync::Mutex;
 
-fn main() {
+#[test]
+fn mutate_in_threads() {
   let m = Mutex::new(3);
   crossbeam::scope(|scope| {
     scope.spawn(|| { 
@@ -703,13 +705,13 @@ fn main() {
       *lock += 1; 
     });
   });
-  println!("i:{}", *m.lock().unwrap());
+  assert_eq!(*m.lock().unwrap(), 5);
 }
 ```
 
-
 # Build
 
+## Demo
 
 # More
 
@@ -841,7 +843,7 @@ x Safety
 x No gc
 x Borrow Checker
 x Type inference
-Concurrency
+x Concurrency
 x Generics
 x Monomorphisation
 x Closures
@@ -849,10 +851,10 @@ x Mut
 x Structs
 x Traits
 x Memory safety without garbage collection
-Concurrency without data races
-Abstraction without overhead
+x Concurrency without data races
+x Abstraction without overhead
 Tests parallel by default
-Type aliases
+- Type aliases
 
 # Phone Notes
 
@@ -863,7 +865,7 @@ x Safety
 x No gc
 x Borrow checker
 x Type inference
-Concurrency
+x Concurrency
 x Generics
 
 x monomorphisation ni
