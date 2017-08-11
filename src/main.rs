@@ -1,5 +1,4 @@
 #![feature(fnbox)]
-#![feature(closure_to_fn_coercion)]
 extern crate iron;
 extern crate router;
 extern crate rustc_serialize;

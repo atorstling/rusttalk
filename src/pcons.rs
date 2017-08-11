@@ -1,5 +1,4 @@
 #![feature(fnbox)]
-#![feature(closure_to_fn_coercion)]
 extern crate crossbeam;
 use std::boxed::FnBox;
 
