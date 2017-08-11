@@ -217,7 +217,7 @@ code.compile {
 }
 code.result {
     color: black;
-    font-size: 35px;
+    font-size: 30px;
 }
 pre code {
     padding: 0;
