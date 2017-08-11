@@ -211,6 +211,14 @@ code {
     color: #8D1A38;
     white-space: pre-wrap;
 }
+code.compile {
+    color: #8D1A38;
+    font-size: 20px;
+}
+code.result {
+    color: black;
+    font-size: 35px;
+}
 pre code {
     padding: 0;
     font-size: inherit;

@@ -10,7 +10,25 @@ window.addEventListener('load', function () {
 		resultArea.textContent = resultText;
 	}
 
-	function execCode(editor, resultArea) {
+	function showResult2(compileArea, resultArea, compileText, resultText) {
+    if (compileText === undefined) {
+      compileArea.style.display = "none";
+    } else {
+      compileArea.style.display = "block";
+      compileArea.textContent = compileText;
+    }
+
+
+		if (resultText === undefined) {
+			resultArea.style.display = "none";
+		} else {
+		  resultArea.style.display = "block";
+	  	resultArea.textContent = resultText;
+    }
+
+	}
+
+	function execCode(editor, compileArea, resultArea) {
                 var cod = editor.getValue();
 		var req = new XMLHttpRequest();
                 var isTest = cod.includes("#[test]");                
@@ -52,21 +70,22 @@ window.addEventListener('load', function () {
         //For old playground
         //showResult(resultArea, response.result);
         //For new playground
-				showResult(resultArea, response.stderr + response.stdout);
+				//showResult(resultArea, response.stderr + response.stdout);
+				showResult2(compileArea, resultArea, response.stderr, response.stdout);
 				//showResult(resultArea, response.stdout);
 			} else {
-				showResult(resultArea,
-					"Request failed with code: " + req.status);
+				showResult2(compileArea, resultArea,
+					"Request failed with code: " + req.status, undefined);
 			}
 		};
 		req.onerror = function(e) {
                                 console.log(e);
-				showResult(resultArea,
-					"Failed to connect to the Playpen server: " + e);
+				showResult2(compileArea, resultArea,
+					"Failed to connect to the Playpen server: " + e, undefined);
 		}
 		req.setRequestHeader("Content-Type", "application/json");
 		req.send(JSON.stringify(payload));
-		showResult(resultArea, "Please wait...");
+		showResult2(compileArea, resultArea, "Please wait...", undefined);
 	}
 
 function createElements(code) {
@@ -86,8 +105,15 @@ function createElements(code) {
 
 		//The result area
 		var resultArea = document.createElement("code");
+    resultArea.setAttribute("class", "result");
 		resultArea.style.display = "none"; //Hide
 		code.parentNode.insertBefore(resultArea, code);
+
+    //The compile area
+    var compileArea = document.createElement("code");
+    compileArea.setAttribute("class", "compile");
+    compileArea.style.display = "none";
+    code.parentNode.insertBefore(compileArea, resultArea);
 
 		//The reset code button
 		var resetBtn = document.createElement("button");
@@ -95,9 +121,9 @@ function createElements(code) {
 		resetBtn.className = "reset-button";
 		resetBtn.addEventListener("click", function() {
 			editor.setValue(code.textContent.trim(), -1);
-			showResult(resultArea);
+			showResult2(compileArea, resultArea);
 		});
-		code.parentNode.insertBefore(resetBtn, resultArea);
+		code.parentNode.insertBefore(resetBtn, compileArea);
 
 		//The run button
 		var runBtn = document.createElement("button");
@@ -107,7 +133,7 @@ function createElements(code) {
 		//runBtn.addEventListener("click", function() {
 	//		execCode(editor, resultArea);
 	//	});
-		runBtn.onclick = function() { execCode(editor, resultArea); }
+		runBtn.onclick = function() { execCode(editor, compileArea, resultArea); }
 		code.parentNode.insertBefore(runBtn, resetBtn);
 }
 
