@@ -81,7 +81,7 @@ fn main() {
 # Unika säljfördelar
 
 * Minnessäkerhet utan skräpinsamling (Nära unikt) <!-- Även ATS -->
-* Samtidighet utan kapplöpningar (Novelish) <!-- Concurrency without data races -->
+* Trådsäkerhet&#42; genom statisk analys (Nära unikt) <!-- Concurrency without data races -->
 * Kostanadsfria abstraktioner <!-- Also C++ -->
 * Högnivåspråk <!-- High-level language -->
 * Lågnivå-kontroll vid behov <!-- Low-level control - `unsafe` -->
