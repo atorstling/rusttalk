@@ -58,33 +58,33 @@ fn main() {
 }
 </script>
 
-# Background
+# Bakgrund
 
-# Early Stages
+# I begynnelsen
 
 ![Graydon Hoare](img/graydon.jpg "Graydon Hoare")
 
-* Started by Graydon Hoare 2006. OCaml
+* Startades av Graydon Hoare 2006. OCaml
 * Mozilla 2009
-* Self-hosting compiler in 2010
-* 1.0 in May of 2015
-* Now 1.15 (Mar 2017)
+* Själv-hysande kompilator 2010
+* 1.0 maj 2015
+* Nu 1.19 (Aug 2017)
 
-# Goals
+# Mål
 
-* Find Alternative to C++ (at Mozilla)
-  * Memory safety
-  * Thread safety
-  * Compilation model
-  * Module system, dependencies
+* Hitta ett alternative till C++ (Hos Mozilla)
+  * Minnessäkerhet
+  * Trådsäkerhet
+  * Bättre kompilatorsystem
+  * Modulsystem
 
-# Main Selling Points
+# Unika säljfördelar
 
-* Memory safety without garbage collection (Novelish)
-* Concurrency without data races (Novelish)
-* Abstraction without overhead
-* High-level language
-* Low-level control - `unsafe`
+* Minnessäkerhet utan skräpinsamling (Nära unikt) <!-- Även ATS -->
+* Samtidighet utan kapplöpningar (Novelish) <!-- Concurrency without data races -->
+* Kostanadsfria abstraktioner <!-- Also C++ -->
+* Högnivåspråk <!-- High-level language -->
+* Lågnivå-kontroll vid behov <!-- Low-level control - `unsafe` -->
 
 # Usages
 
