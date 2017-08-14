@@ -1,24 +1,22 @@
-% In Rust we Trust
+% Rust - So Familiar yet so Different
 
-![rust](img/rust.svg)
+![alt text](img/rust.svg)
 
-# Fråga
+Alexander Torstling
 
-<!-- Kolla hur många som har hållit på med C, C++ -->
+# Poll
 
-# Kontext
+# Disclaimer
 
-<!-- Jag är ingen expert, bara en hobbyist -->
-
-# Hej världen!
+# Hello, World!
 
 <script language="rust">
 fn main() {
-    println!("Hej världen!");
+    println!("Hello, World!");
 }
 </script>
 
-# Hej nätet!
+# Hello, Web!
 
 <script language="rust">
 extern crate iron;
@@ -67,7 +65,7 @@ fn main() {
 * Started by Graydon Hoare 2006. OCaml
 * Mozilla 2009
 * Self-hosting compiler in 2010
-* 1.0 in May of 2015
+* 1.0 in May of 2015 
 * Now 1.15 (Mar 2017)
 
 # Goals
@@ -115,9 +113,9 @@ fn main() {
 * Generics
 * Macros
 * FFI - C, C++, interop
-* `Cargo` complete solution for
+* `Cargo` complete solution for 
   * setting up projects
-  * building
+  * building 
   * formatting
   * testing
   * sharing code
@@ -216,7 +214,7 @@ How?
 * Sometimes data is copied instead -> Two pieces of data, two owners.
 * When owner goes out of scope, data will be freed.
 
-=> Automatic deallocation, no GC!
+=> Automatic deallocation, no GC! 
 
 # Lifetimes, Automatic Destruction
 
@@ -310,7 +308,7 @@ fn main() {
 }
 </script>
 
-# Undo Mutability
+# Undo Mutability 
 
 You cannot "undo" immutability
 
@@ -498,7 +496,7 @@ fn main() {
 fn print<T: std::fmt::Display>(a: T, b: T) {
   println!("{}-{}", a, b);
 }
-fn print2<T>(a: T, b: T)
+fn print2<T>(a: T, b: T) 
   where T: std::fmt::Display + std::fmt::Debug
 {
   println!("{}-{:?}", a, b);
@@ -666,7 +664,7 @@ use std::thread;
 
 fn main() {
   let mut i = 3;
-  let ta = thread::spawn(|| { i += 1 });
+  let ta = thread::spawn(|| { i += 1 }); 
   println!("i: {}", i);
   //CANT-FIX
 }
@@ -675,7 +673,7 @@ fn main() {
 
 # Threading - Mutable Values
 
-<script language="rust">
+```
 extern crate crossbeam;
 
 fn main() {
@@ -686,11 +684,11 @@ fn main() {
   });
   println!("i:{}", i);
 }
-</script>
+```
 
 # Threading - Mutex
 
-<script language="rust">
+```
 extern crate crossbeam;
 use std::sync::Mutex;
 
@@ -698,18 +696,18 @@ use std::sync::Mutex;
 fn mutate_in_threads() {
   let m = Mutex::new(3);
   crossbeam::scope(|scope| {
-    scope.spawn(|| {
+    scope.spawn(|| { 
       let mut lock = m.lock().unwrap();
-      *lock += 1;
+      *lock += 1; 
     });
-    scope.spawn(|| {
+    scope.spawn(|| { 
       let mut lock = m.lock().unwrap();
-      *lock += 1;
+      *lock += 1; 
     });
   });
   assert_eq!(*m.lock().unwrap(), 5);
 }
-</script>
+```
 
 # Threading - Conclusions
 
@@ -760,7 +758,7 @@ enum Animal {
   Snake
 }
 fn main() {
-  let (a, b) = (Animal::Snake,
+  let (a, b) = (Animal::Snake, 
                 Animal::Duck { quackiness_dba : 7.0, diving : false });
   let c: Animal = Animal::Moose(46,46);
   let d = Animal::Horse { tail_length_mm: 16 };
@@ -829,7 +827,7 @@ fn main() {
 }
 </script>
 
-# Generic Structs
+# Generic Structs 
 
 <script language="rust">
 struct Wrapped<T> {

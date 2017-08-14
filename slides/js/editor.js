@@ -31,8 +31,8 @@ window.addEventListener('load', function () {
 	function execCode(editor, compileArea, resultArea) {
                 var cod = editor.getValue();
 		var req = new XMLHttpRequest();
-                var isTest = cod.includes("#[test]");                
-/*                
+                var isTest = cod.includes("#[test]");
+/*
 		var payload = {
 			version: "stable",
 			optimize: "0",
@@ -40,27 +40,27 @@ window.addEventListener('load', function () {
 			test: isTest
 		};
 		req.open('POST', "https://play.rust-lang.org/evaluate.json", true);
-                
+
     */
 /*
                 var payload = {
-			channel: "stable",                        
+			channel: "stable",
                         code: cod,
                         crateType: "bin",
-                        mode: "debug",			
+                        mode: "debug",
 			test: false
 		};
 		req.open('POST', "http://play.integer32.com/execute", true);
 */
                 var payload = {
-			channel: "nightly",                        
+			channel: "nightly",
                         code: cod,
                         crateType: "bin",
-                        mode: "debug",			
-			tests: false
+                        mode: "debug",
+			tests: isTest
 		};
 		req.open('POST', "http://localhost:4711/execute", true);
-                
+
 		req.onload = function(e) {
 			if (req.readyState !== 4) {
 				return;
@@ -129,7 +129,9 @@ function createElements(code) {
 		var runBtn = document.createElement("button");
 		runBtn.innerHTML = "Run";
 		runBtn.className = "run-button";
-		runBtn.accessKey = "r";
+		//Accesskey won't work since there are many buttons with the same accesskey,
+		// since all slides are on the same html page.
+		runBtn.accessKey = "u";
 		//runBtn.addEventListener("click", function() {
 	//		execCode(editor, resultArea);
 	//	});
