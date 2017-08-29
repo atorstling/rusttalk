@@ -19,3 +19,4 @@ name = "pcons"
 
 [[bin]]
 name = "yo"
+path = "src/main.rs"
