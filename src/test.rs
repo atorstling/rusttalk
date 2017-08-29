@@ -2,7 +2,6 @@ extern crate hyper;
 extern crate pcons;
 use self::pcons::{pcons, pconsl, pconsl2};
 use self::hyper::client::Client;
-use self::hyper::status::StatusCode;
 use iron::Listening;
 use std::io::Read;
 use std::boxed::FnBox;
@@ -30,21 +29,13 @@ fn http_get() {
     let _server = AutoServer::new("9989");
     let client = Client::new();
     let mut res = client
-        .get("http://127.0.0.1:9989/yo/mtg_bootstrap")
+        .get("http://127.0.0.1:9989/hello/mtg_bootstrap")
         .send()
         .unwrap();
     assert_eq!(res.status, hyper::Ok);
     let mut payload = String::new();
     res.read_to_string(&mut payload).unwrap();
-    assert_eq!(payload, "{\"msg\":\"yo mtg_bootstrap!\"}");
-}
-
-#[test]
-fn http_put() {
-    let _server = AutoServer::new("9994");
-    let client = Client::new();
-    let res = client.put("http://127.0.0.1:9994/yo").send().unwrap();
-    assert_eq!(res.status, StatusCode::ImATeapot);
+    assert_eq!(payload, "{\"msg\":\"hello mtg_bootstrap!\"}");
 }
 
 #[test]
@@ -52,8 +43,8 @@ fn http_get_two() {
     let _server = AutoServer::new("9998");
     let client = Client::new();
     let (res1, res2) = pcons(
-        || client.get("http://127.0.0.1:9998/yo/bro").send().unwrap(),
-        || client.get("http://127.0.0.1:9998/yo/sis").send().unwrap(),
+        || client.get("http://127.0.0.1:9998/hello/bro").send().unwrap(),
+        || client.get("http://127.0.0.1:9998/hello/sis").send().unwrap(),
     );
     assert_eq!(res1.status, hyper::Ok);
     assert_eq!(res2.status, hyper::Ok);
@@ -66,16 +57,16 @@ fn http_get_multiple() {
     let (res1, (res2, res3)) = pcons(
         || {
             client
-                .get("http://127.0.0.1:9997/yo/bigmama")
+                .get("http://127.0.0.1:9997/hello/bigmama")
                 .send()
                 .unwrap()
         },
         || {
             pcons(
-                || client.get("http://127.0.0.1:9997/yo/wassa").send().unwrap(),
+                || client.get("http://127.0.0.1:9997/hello/wassa").send().unwrap(),
                 || {
                     client
-                        .get("http://127.0.0.1:9997/yo/lilboy")
+                        .get("http://127.0.0.1:9997/hello/lilboy")
                         .send()
                         .unwrap()
                 },
@@ -92,7 +83,7 @@ fn http_get_pconsl_single() {
     let _server = AutoServer::new("9996");
     let client = Client::new();
     let v1 = vec![
-        || client.get("http://127.0.0.1:9996/yo/myman").send().unwrap(),
+        || client.get("http://127.0.0.1:9996/hello/myman").send().unwrap(),
     ];
     let resl = pconsl(v1);
     assert_eq!(resl.get(0).unwrap().status, hyper::Ok);
@@ -104,10 +95,10 @@ fn http_get_pconsl() {
     let client = Client::new();
     let mut v1: Vec<Box<FnBox() -> hyper::client::Response + Send>> = Vec::new();
     v1.push(Box::new(
-        || client.get("http://127.0.0.1:9995/yo/lo").send().unwrap(),
+        || client.get("http://127.0.0.1:9995/hello/lo").send().unwrap(),
     ));
     v1.push(Box::new(
-        || client.get("http://127.0.0.1:9995/yo/yo").send().unwrap(),
+        || client.get("http://127.0.0.1:9995/hello/yo").send().unwrap(),
     ));
     let resl = pconsl2(v1);
     assert_eq!(resl.get(0).unwrap().status, hyper::Ok);
