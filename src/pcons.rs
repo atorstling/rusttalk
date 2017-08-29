@@ -7,10 +7,11 @@ use std::boxed::FnBox;
 // where F: FnOnce() -> T + Send + 'a, T: Send + 'a
 // Send means Sync + Copy
 pub fn pcons<F1, R1, F2, R2>(f1: F1, f2: F2) -> (R1, R2)
-    where F1: FnOnce() -> R1 + Send,
-          F2: FnOnce() -> R2 + Send,
-          R1: Send,
-          R2: Send
+where
+    F1: FnOnce() -> R1 + Send,
+    F2: FnOnce() -> R2 + Send,
+    R1: Send,
+    R2: Send,
 {
     crossbeam::scope(|scope| (scope.spawn(f1).join(), scope.spawn(f2).join()))
 }
@@ -47,8 +48,9 @@ fn pcons_can_be_chained() {
 // Goal: have pconsl use pcons
 //
 pub fn pconsl<F, R>(mut fs: Vec<F>) -> Vec<R>
-    where F: FnOnce() -> R + Send + Sync,
-          R: Send
+where
+    F: FnOnce() -> R + Send + Sync,
+    R: Send,
 {
     if fs.len() == 0 {
         let vec: Vec<R> = vec![];
@@ -68,8 +70,9 @@ pub fn pconsl<F, R>(mut fs: Vec<F>) -> Vec<R>
 
 
 pub fn pconsl2<F, R>(mut fs: Vec<Box<F>>) -> Vec<R>
-    where F: FnBox() -> R + Send + ?Sized,
-          R: Send
+where
+    F: FnBox() -> R + Send + ?Sized,
+    R: Send,
 {
     if fs.len() == 0 {
         let vec: Vec<R> = vec![];
