@@ -6,10 +6,6 @@
 
 <!-- Kolla hur många som har hållit på med C, C++ -->
 
-# Friskrivningsklausul
-
-<!-- Jag är ingen expert, bara en hobbyist -->
-
 # Innehåll
 
 * Hej världen!
@@ -69,7 +65,13 @@ fn main() {
 }
 </script>
 
-# Bakgrund & mål
+# Innehåll
+
+* <strike>Hej världen!</strike>
+* Bakgrund & Mål
+* Huvudconcept
+* Tooling
+* Frågor
 
 # I begynnelsen
 
@@ -105,87 +107,31 @@ fn main() {
 * Npm
 * Samsung (IoT)
 
-
 # Språkegenskaper
 
 * Systemspråk
 * Statisk, stark, härledd typning
-* Kompilerar med LLVM
-* Samtidigt
-* Imperativt, Procedurellt
+* Designat för samtidighet
+* Multi-paradigm
 * Funktionellt
-  * Första klassesns funktioner
-  * Mönstermatchning
-  * Oplanerad multiomformning (Ad-hoc polymorphism) genom Egenskaper (Traits)
-  * Lambdor, Omslutningar (Closures)
+  * Första klassens funktioner
+  * Lambdor
   * Högre ordningens funktioner - map, flatmap, filter etc
-
-# Språkegenskaper 2
-
+  * Många saker är expressions
 * OO-aktigt (metoder, Traits)
-* Allmängiltigheter (Generics)
-* Makron (Macros)
-* Främmande funktionsgränssnitt - FFI - C, C++
-* Bra tooling för allt från setup till publicering
+* Generics
+* Makron
+* FFI - C, C++
 
-# Men
+# Innehåll
 
-* Ingen riktig spegelbildning (Reflection)
-* Inga gröna trådar eller liknande
+* <strike>Hej världen!</strike>
+* <strike>Bakgrund & Mål</strike>
+* Huvudconcept
+* Tooling
+* Frågor
 
-# Säkerhetsaspekter
-
-* Inga godtyckliga pekare
-* Inga nullpekare
-* Oföränderlig om inget annat är sagt (immutable by default)
-* 
-* Pure by default
-* Bounds-checked indexing
-* Shared state is enforced to be threadsafe
-
-# Compared to other Languages
-
-# Speed
-
-![](img/debian-fastest-time.svg "Fastest Time")
-
-# CPU
-
-![](img/debian-lowest-cpu.svg "Lowest CPU")
-
-# Basics
-
-# Primitives
-
-signed integers: `i8`, `i16`, `i32`, `i64` and `isize` (pointer size)
-
-unsigned integers: `u8`, `u16`, `u32`, `u64` and `usize` (pointer size)
-
-floating point: `f32`, `f64`
-
-char Unicode scalar values like `'a'`, `'å'` and `'∞'` (4 bytes each)
-
-bool either `true` or `false`
-
-and the unit type `()`, whose only value is also `()`
-
-arrays like `[1, 2, 3]`
-
-tuples like `(1, true)`
-
-# Variable bindings
-
-<script language="rust">
-fn main() {
-  let a: u32 = 4711;
-  println!("1: {}",a);
-
-  let (b, c) = (42, 1337i32);
-  println!("2: {}-{}", b, c);
-}
-</script>
-
-# Prevent Read of Uninitialized
+# Förebygger läsning av oinitaliserade variabler
 
 <script language="rust">
 fn main() {
@@ -195,43 +141,51 @@ fn main() {
 }
 </script>
 
-# Mutability 1
-
-The *binding* is mutable or not
+# Muterbarhet 1
 
 <script language="rust">
 fn main() {
   let a: u32 = 4711;  //FIXME
+  println!("{}",a);
   a = 4712;
   println!("{}",a);
 }
 </script>
 
-# Memory Safety without GC
+# Minnessäkerhet utan skräpinsamling.
 
-How?
+Hur?
 
-* Lifetimes
-* Ownership
-* Borrowing
+* Livstider
+* Ägarskap
+* Lån
 
-# Ownership
+# Ägarskap
+* All data är antingen `statisk` eller ägs av en variabel.
+* Vid varje givet tillfälle har datat endast en ägare
+* Man kan överföra ägandeskap - move
+* Datatyper kan implementera Copy -> två kopior, två ägare
+* När data går ur scope frigörs minnet.
 
-* All data is either `static` or owned by some binding.
-* There is only one owner of any given data.
-* Ownership can be transfered - Move
-* Sometimes data is copied instead -> Two pieces of data, two owners.
-* When owner goes out of scope, data will be freed.
+=> Automatisk deallokering utan GC!
 
-=> Automatic deallocation, no GC!
-
-# Lifetimes, Automatic Destruction
+# Livstider, Automatisk Destruering
 
 <script language="rust">
 fn main() {
-  let mut a = Vec::new();
-  a.push(1);
-  a.push(2);
+  struct Test{};
+
+  impl Drop for Test { 
+    fn drop(&mut self) {
+      println!("hejdå!");
+    }
+  }
+
+  println!("före");
+  {
+    let _a = Test{};
+  }
+  println!("efter");
 }
 </script>
 
@@ -240,142 +194,99 @@ fn main() {
 <script language="rust">
 fn main() {
   let a = 4711;
-  let b: u32 = a;
+  let mut b: u32 = a;
+  b+=1;
   println!("{}-{}", a, b);
 }
 </script>
 
 # Move
 
-* "Heavier" types
-* Don't implement `Copy`
+* "Tyngre" typer
+* Implementerar inte `Copy`
+* Default för structs
 
 <script language="rust">
 fn main() {
-  let a = String::from("hej");
-  let b: String = a;
-  println!("{}", a); //FIXME
+  #[derive(Debug)]
+  struct Test{};
+
+  let a = Test{};
+  let b = a;
+  println!("{:?}", a); 
 }
 </script>
 
-# References
-* Views into data owned by someone else
+# Referenser & Lån
+* En referens är en vy in i data som ägs av någon annan
+* Implicerar ett lån
 
-## Types
-* `&`
-* `&mut`
+## Typer 
+* `&mut` - Muterbar referens. Ger lån för skrivning.  Exklusivt
+* `&` - Icke muterbar referens. Ger lån för läsning. Ej exklusivt
 
-## Rules
-* A reference cannot outlive its referent
+## Regler
 
-# Borrowing
-Taking a reference "borrows" the data.
-You can borrow for read or write. Still a borrow.
+* En referens får aldrig leva längre än datat den refererar till
 
-You can have EITHER
+Man kan ANTINGEN ha
 
-* one or more immutable references (&T) to a resource OR
-* exactly one mutable reference (&mut T).
+* En eller flera lån för läsning ELLER
+* Precis ett lån för skrivning
 
-# Immutable References - Can Have Many
+<!-- Datat som en läslån pekar på förändras inte under
+lånets varaktighet. -->
 
-Can have many immutable references
-
--- Borrow immutably many times
+# Många lån för läsning
 
 <script language="rust">
 fn main() {
-  let a: u32 = 4711;
-  let b: &u32 = &a;
-  let c: &u32 = &a;
+  let a = 4711;
+  let b = &a;
+  let c = &a;
   println!("{:?}", (a,b,c));
 }
 </script>
 
-# Immutable References - Mutate
+# Lån för skrivning
 
-You cannot mutate if borrowed. Even if only immutably borrowed
+* Muterbara referenser endast till muterbar data
+* Muterbara referenser överför skrivrätt
 
+<!-- 1: a should be mutable -->
+<!-- 2: end scope before writing to a-->
 <script language="rust">
 fn main() {
-  let mut a: u32 = 4711;
-  let b: &u32 = &a;
-  a = 4712;
-  println!("{:?}", (a,b));
+    let a = 47; 
+    {
+      let b = &mut a;
+      *b += 1; 
+      a += 1;
+    }
+    println!("{}", a);
 }
 </script>
 
-# Mutable References 2
-
-* Borrowing mutably "transfers access rights"
+# Låns livstid kollas
 
 <script language="rust">
 fn main() {
-  let mut a: i64 = 4711;
-  let b: &mut i64 = &mut a;
-  let c = a; // FIXME
-}
-</script>
-
-# Undo Mutability
-
-You cannot "undo" immutability
-
-<script language="rust">
-fn main() {
-    let a: i32 = 47; // FIXME
-    let b: &mut i32 = &mut a;
-    *b = 48;
-}
-</script>
-
-# References - Summary
-
-* You can share variables through references
-* Writing to a variable behaves like read/write locks
-  * Write is exclusive
-  * Read is concurrent
-
-# Important Data Types and Constructs
-
-# `str`
-
-String constants are of type `str`.
-
-`static` - part of the data segment of the executable.
-
-Immutable. Have to refer to them by const reference
-
-<script language="rust">
-fn main() {
-  let a: str = "hej"; //FIXME
-  let b: &mut str = "på"; //FIXME
-  let c: &str = "dig";
-  println!("{}", c);
-}
-</script>
-
-# `String`s
-
-`String`s are mutable.
-
-<script language="rust">
-fn main() {
-  let mut a: String = String::from("hej");
-  a.push_str(" på dig");
-  println!("{}", a);
-}
-</script>
-
-# If Statement
-
-<script language="rust">
-fn main() {
-  if 0 < 1 {
-    println!("hej");
+  let b : &u32;
+  {
+    let a = 47; 
+    b = &a;
   }
+  println!("{}", b);  
 }
 </script>
+
+# Summering minnessäkerhet utan GC
+
+Livstider och ägarskap garanterar säkra referenser
+och förhindrar ofrivillig muterbarhet 
+
+# Trådsäkerhet
+
 
 # If Statement is Expression
 
@@ -953,3 +864,95 @@ x x: MutBind -----> 0x0bc32: 4
 x y: MutBind -----> mutBorrow ----> 0x0bc32: 4
 
 First slide: http://venge.net/graydon/talks/intro-talk-2.pdf
+
+# CPU
+
+![](img/debian-lowest-cpu.svg "Lowest CPU")
+
+# Säkerhetsaspekter
+
+* Inga godtyckliga pekare
+* Inga nullpekare
+* Oföränderlig om inget annat är sagt (immutable by default)
+* I princip inget globalt state
+* Bounds checking, eller eleminiering därav
+* Delat minne måste vara trådsäkert
+
+
+# Hastighet
+
+![](img/debian-fastest-time.svg "Fastest Time")
+
+# Lån förhindrar mutering
+
+Gäller även lån för läsning
+
+<script language="rust">
+fn main() {
+  let mut a = 4711;
+  let b = &a;
+  a = 4712; 
+  println!("{:?}", (a,b));
+}
+</script>
+
+# Lån för skrivning
+
+* Lån för skrivning överför "åtkomsträtten" 
+
+<script language="rust">
+fn main() {
+  let mut a = 4711;
+  let _b = &mut a;
+  let _c = a;
+}
+</script>
+
+# References - Summary
+
+* You can share variables through references
+* Writing to a variable behaves like read/write locks
+  * Write is exclusive
+  * Read is concurrent
+
+# Important Data Types and Constructs
+
+# `str`
+
+String constants are of type `str`.
+
+`static` - part of the data segment of the executable.
+
+Immutable. Have to refer to them by const reference
+
+<script language="rust">
+fn main() {
+  let a: str = "hej"; //FIXME
+  let b: &mut str = "på"; //FIXME
+  let c: &str = "dig";
+  println!("{}", c);
+}
+</script>
+
+# `String`s
+
+`String`s are mutable.
+
+<script language="rust">
+fn main() {
+  let mut a: String = String::from("hej");
+  a.push_str(" på dig");
+  println!("{}", a);
+}
+</script>
+
+# If Statement
+
+<script language="rust">
+fn main() {
+  if 0 < 1 {
+    println!("hej");
+  }
+}
+</script>
+
