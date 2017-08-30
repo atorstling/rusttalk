@@ -1,14 +1,22 @@
 % In Rust we Trust
-
 ![rust](img/rust.svg)
+- Ett säkert systemspråk utan skräpinsamling
 
-# Fråga
+# Rundfråga
 
 <!-- Kolla hur många som har hållit på med C, C++ -->
 
-# Kontext
+# Friskrivningsklausul
 
 <!-- Jag är ingen expert, bara en hobbyist -->
+
+# Innehåll
+
+* Hej världen!
+* Bakgrund & Mål
+* Huvudconcept
+* Tooling
+* Frågor
 
 # Hej världen!
 
@@ -34,20 +42,23 @@ struct Answer {
     msg: String,
 }
 
-fn get_yo(req: &mut Request) -> IronResult<Response> {
-    let phrase = req.extensions.get::<Router>().unwrap().find("phrase").unwrap();
-    let ans = Answer { msg: format!("yo {}!", phrase).to_string() };
-    let payload = json::encode(&ans).unwrap();
-    Ok(Response::with((status::Ok, payload)))
-}
-
 fn server(port: &str) -> Listening {
     let mut router = Router::new();
-    router.get("/yo/:phrase", get_yo, "get_yo");
-    router.put("/yo",
-               |_: &mut Request| Ok(Response::with((status::ImATeapot, "no"))),
-               "put_yo");
-    Iron::new(router).http(format!("localhost:{}", port)).unwrap()
+    router.get(
+        "/hello/:name",
+        |req: &mut Request| {
+            let name = req.extensions.get::<Router>().unwrap().find("name").unwrap();
+            let ans = Answer {
+                msg: format!("hello {}!", name).to_string(),
+            };
+            let payload = json::encode(&ans).unwrap();
+            Ok(Response::with((status::Ok, payload)))
+        },
+        "hello_world",
+    );
+    Iron::new(router)
+        .http(format!("localhost:{}", port))
+        .unwrap()
 }
 
 fn main() {
@@ -58,7 +69,7 @@ fn main() {
 }
 </script>
 
-# Bakgrund
+# Bakgrund & mål
 
 # I begynnelsen
 
@@ -86,30 +97,30 @@ fn main() {
 * Högnivåspråk <!-- High-level language -->
 * Lågnivå-kontroll vid behov <!-- Low-level control - `unsafe` -->
 
-# Usages
+# Användanden
 
-* Servo. Parallell Browser Rendering Engine by Mozilla
-* Parts of Firefox
+* Servo. Parallell webbläsarrenderingsmotor av Mozilla
+* Delar av Firefox <!-- Parallell, css styling engine -->
 * Dropbox
 * Npm
 * Samsung (IoT)
 
 
-# Language Properties
+# Språkegenskaper
 
-* System language
-* Static, strong, inferred typing
-* Compiled on LLVM
-* Concurrent
-* Imperative, Procedural
-* Functional
-  * First-class functions
-  * Pattern matching
-  * Ad-hoc polymorphism through Traits
-  * Lambdas, Closures
-  * Iterators (map, flatmap, filter etc)
+* Systemspråk
+* Statisk, stark, härledd typning
+* Kompilerar med LLVM
+* Samtidigt
+* Imperativt, Procedurellt
+* Funktionellt
+  * Första klassesns funktioner
+  * Mönstermatchning
+  * Oplanerad multiomformning (Ad-hoc polymorphism) genom Egenskaper (Traits)
+  * Lambdor, Omslutningar (Closures)
+  * Högre ordningens funktioner - map, flatmap, filter etc
 
-# Language Properties 2
+# Språkegenskaper 2
 
 * OO-ish - visibility, Traits
 * Generics
