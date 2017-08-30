@@ -122,27 +122,23 @@ fn main() {
 
 # Språkegenskaper 2
 
-* OO-ish - visibility, Traits
-* Generics
-* Macros
-* FFI - C, C++, interop
-* `Cargo` complete solution for
-  * setting up projects
-  * building
-  * formatting
-  * testing
-  * sharing code
+* OO-aktigt (metoder, Traits)
+* Allmängiltigheter (Generics)
+* Makron (Macros)
+* Främmande funktionsgränssnitt - FFI - C, C++
+* Bra tooling för allt från setup till publicering
 
-# But
+# Men
 
-* No Real Reflection
-* No Green Threads or Tasks
+* Ingen riktig spegelbildning (Reflection)
+* Inga gröna trådar eller liknande
 
-# Safety
+# Säkerhetsaspekter
 
-* No wild pointers.
-* No null pointers.
-* Immutable by default.
+* Inga godtyckliga pekare
+* Inga nullpekare
+* Oföränderlig om inget annat är sagt (immutable by default)
+* 
 * Pure by default
 * Bounds-checked indexing
 * Shared state is enforced to be threadsafe
