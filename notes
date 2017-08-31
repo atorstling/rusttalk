@@ -27,3 +27,5 @@ match value_any.downcast_ref::<String>() {
     }
 
 no return statement required
+
+The borrow checker is not aware of threads, only lifetimes and "Send, Sync"
