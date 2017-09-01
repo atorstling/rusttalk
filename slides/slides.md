@@ -11,7 +11,7 @@
 * Hej världen!
 * Bakgrund & Mål
 * Huvudconcept
-* Tooling
+* Avslut
 * Frågor
 
 # Hej världen!
@@ -43,7 +43,11 @@ fn server(port: &str) -> Listening {
     router.get(
         "/hello/:name",
         |req: &mut Request| {
-            let name = req.extensions.get::<Router>().unwrap().find("name").unwrap();
+            let route = req.extensions.get::<Router>().unwrap();
+            let name = match route.find("name") {
+               Some(name) => name,
+               None => "mysterious stranger"
+            };
             let ans = Answer {
                 msg: format!("hello {}!", name).to_string(),
             };
@@ -70,7 +74,7 @@ fn main() {
 * <strike>Hej världen!</strike>
 * Bakgrund & Mål
 * Huvudconcept
-* Summering
+* Avslut
 * Frågor
 
 # I begynnelsen
@@ -90,14 +94,6 @@ fn main() {
   * Trådsäkerhet
   * Bättre kompilatorsystem
   * Modulsystem
-
-# Unika säljfördelar
-
-* Minnessäkerhet utan skräpinsamling (Nära unikt) <!-- Även ATS -->
-* Trådsäkerhet&#42; genom statisk analys (Nära unikt) <!-- Concurrency without data races -->
-* Kostanadsfria abstraktioner <!-- Also C++ -->
-* Högnivåspråk <!-- High-level language -->
-* Lågnivå-kontroll vid behov <!-- Low-level control - `unsafe` -->
 
 # Användanden
 
@@ -123,12 +119,73 @@ fn main() {
 * Makron
 * FFI - C, C++
 
+# Unika säljfördelar
+
+* Minnessäkerhet utan skräpinsamling (Nära unikt) <!-- Även ATS -->
+* Trådsäkerhet&#42; genom statisk analys (Nära unikt) <!-- Concurrency without data races -->
+* Zero-cost abstractions <!-- Also C++ -->
+* Högnivåspråk med lågnivå-kontroll vid behov <!-- Low-level control - `unsafe` -->
+
+# Att återta minne & resurser
+
+* Att bara allokera skapar massa garbage
+
+
+## Lösning
+  * Flesta säkra språk - GC 
+  * C - disciplin
+  * C++ - deterministisk destruering + disciplin
+  * Rust - deterministisk destruering + statisk analys
+
+## Deterministisk destruering 
+
+* Tightare
+* Inte bara minne
+
+
+# Minnessäkerhet
+
+## Enkeltrådat
+* Åtkomstfel 
+   * Buffer overflow/overread
+   * Race condition 
+   * Use after free
+* Oinitialiserade variabler
+   * Null pointer access 
+   * Wild pointers
+* Minnesläckor
+   * Double free
+   * Invalid free (free invalid address)
+   * Mismatched free (free med fel allokator)
+
+## Trådat 
+* Osynkroniserad läsning/skrivning - klurig!
+
+# Lösning minnessäkerhet
+
+## Klassisk - GC++
+* ta över ansvar för all allokering
+* låt saker läcka
+* gör runtime garbage analys
+* runtime-checkar för bounds 
+
+## Nackdelar
+* runtime overhead - latency
+* tillåter inte andra allokeringar (custom allocators)
+* löser inte freeing av andra resurser (filer, db connections, etc)
+  * pooler
+
+## Problemformulering
+
+* Kan vi lösa problemen vid kompilering?
+  - få ett säkert språk utan GC?
+
 # Innehåll
 
 * <strike>Hej världen!</strike>
 * <strike>Bakgrund & Mål</strike>
 * Huvudconcept
-* Summering
+* Avslut
 * Frågor
 
 # Förebygger läsning av oinitaliserade variabler
@@ -141,11 +198,11 @@ fn main() {
 }
 </script>
 
-# Muterbarhet 1
+# Immutable om inte annat är sagt
 
 <script language="rust">
 fn main() {
-  let a: u32 = 4711;  //FIXME
+  let a = 4711;  //FIXME
   println!("{}",a);
   a = 4712;
   println!("{}",a);
@@ -191,10 +248,12 @@ fn main() {
 
 # Copy
 
+* För vissa typer kopieras data automatiskt
+
 <script language="rust">
 fn main() {
   let a = 4711;
-  let mut b: u32 = a;
+  let mut b = a;
   b+=1;
   println!("{}-{}", a, b);
 }
@@ -224,15 +283,6 @@ fn main() {
 ## Typer 
 * `&mut` - Muterbar referens. Ger lån för skrivning.  Exklusivt
 * `&` - Icke muterbar referens. Ger lån för läsning. Ej exklusivt
-
-## Regler
-
-* En referens får aldrig leva längre än datat den refererar till
-
-Man kan ANTINGEN ha
-
-* En eller flera lån för läsning ELLER
-* Precis ett lån för skrivning
 
 <!-- Datat som en läslån pekar på förändras inte under
 lånets varaktighet. -->
@@ -267,7 +317,9 @@ fn main() {
 }
 </script>
 
-# Låns livstid kollas
+# Referenser och livstid
+
+* Måste leva kortare än datat den pekar på
 
 <script language="rust">
 fn main() {
@@ -276,7 +328,7 @@ fn main() {
     let a = 47; 
     b = &a;
   }
-  println!("{}", b);  
+  println!("{}", b);
 }
 </script>
 
@@ -352,25 +404,42 @@ fn main() {
 }
 </script>
 
-# Summering huvudkoncept
-
-* Livstider och ägarskap garanterar säkra referenser
-och destruering
-* Trådsäkerhet är explicit och härledd
-
 # Innehåll
 
 * <strike>Hej världen!</strike>
 * <strike>Bakgrund & Mål</strike>
 * <strike>Huvudconcept</strike>
-* Summering
+* Avslut
 * Frågor
 
-# Summering
+# Avslut
 
-* Säkert systemspråk utan GC
-* 
- 
+# Skippat
+
+* "Streams"
+* Algebraiska datatyper
+* Generics
+* Typalias
+* Bra enkla datatyper
+* If & Loopar är expressions
+* Tuples
+
+
+# Sammanfattning
+* Systemspråk
+* Säkrare än många andra språk
+* Högnivå
+* Hög prestanda
+* Bra interop - minne, resurser, FFI
+* Kompilerar -> fungerar?
+
+## Usecase
+* Firefox CSS
+
+## Runtkring
+* Superb tooling
+* https://www.rustup.rs
+
 # Frågor
 
 

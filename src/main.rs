@@ -17,7 +17,11 @@ fn server(port: &str) -> Listening {
     router.get(
         "/hello/:name",
         |req: &mut Request| {
-            let name = req.extensions.get::<Router>().unwrap().find("name").unwrap();
+            let route = req.extensions.get::<Router>().unwrap();
+            let name = match route.find("name") {
+               Some(name) => name,
+               None => "mysterious stranger"
+            };
             let ans = Answer {
                 msg: format!("hello {}!", name).to_string(),
             };
