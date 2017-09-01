@@ -110,10 +110,6 @@ fn main() {
 * Designat för samtidighet
 * Multi-paradigm
 * Funktionellt
-  * Första klassens funktioner
-  * Lambdor
-  * Högre ordningens funktioner - map, flatmap, filter etc
-  * Många saker är expressions
 * OO-aktigt (metoder, Traits)
 * Generics
 * Makron
@@ -147,8 +143,7 @@ fn main() {
 
 ## Enkeltrådat
 * Åtkomstfel 
-   * Buffer overflow/overread
-   * Race condition 
+   * Buffer overflow/overread 
    * Use after free
 * Oinitialiserade variabler
    * Null pointer access 
@@ -161,7 +156,7 @@ fn main() {
 ## Trådat 
 * Osynkroniserad läsning/skrivning - klurig!
 
-# Lösning minnessäkerhet
+# Skapa minnessäkerhet
 
 ## Klassisk - GC++
 * ta över ansvar för all allokering
@@ -171,14 +166,19 @@ fn main() {
 
 ## Nackdelar
 * runtime overhead - latency
-* tillåter inte andra allokeringar (custom allocators)
+* tillåter inte andra allokeringar (flash, minne i gpu, andra algos)
 * löser inte freeing av andra resurser (filer, db connections, etc)
-  * pooler
 
 ## Problemformulering
 
 * Kan vi lösa problemen vid kompilering?
   - få ett säkert språk utan GC?
+  - kanske även lösa trådad access?
+
+# Approachen
+
+## Sjukt grinig kompilator
+![Stop](img/Stop.jpg)
 
 # Innehåll
 
@@ -423,6 +423,10 @@ fn main() {
 * Bra enkla datatyper
 * If & Loopar är expressions
 * Tuples
+* Första klassens funktioner
+* Lambdor
+* Högre ordningens funktioner - map, flatmap, filter etc
+* Många saker är expressions
 
 
 # Sammanfattning
