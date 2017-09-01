@@ -416,6 +416,11 @@ fn main() {
 
 # Skippat
 
+## Tooling
+* Cargo
+  - "allt" - bygg, dependencies, formatting, testning, publicering
+
+## Språkfeatures
 * "Streams"
 * Algebraiska datatyper
 * Generics
@@ -427,6 +432,7 @@ fn main() {
 * Lambdor
 * Högre ordningens funktioner - map, flatmap, filter etc
 * Många saker är expressions
+
 
 
 # Sammanfattning
