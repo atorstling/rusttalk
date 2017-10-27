@@ -15,6 +15,7 @@ window.addEventListener('load', function () {
 		var req = new XMLHttpRequest();
                 var isTest = cod.includes("#[test]");                
                 
+/*
 		var payload = {
 			version: "stable",
 			optimize: "0",
@@ -22,17 +23,17 @@ window.addEventListener('load', function () {
 			test: isTest
 		};
 		req.open('POST', "https://play.rust-lang.org/evaluate.json", true);
-                
-/*
+  */              
+
                 var payload = {
 			channel: "stable",                        
                         code: cod,
                         crateType: "bin",
                         mode: "debug",			
-			test: false
+			tests: false
 		};
-		req.open('POST', "http://play.integer32.com/execute", true);
-*/
+		req.open('POST', "http://localhost:5000/execute", true);
+
                 
 		req.onload = function(e) {
 			if (req.readyState !== 4) {
@@ -40,8 +41,8 @@ window.addEventListener('load', function () {
 			}
 			if (req.status === 200) {
 				var response = JSON.parse(req.response);
-                                showResult(resultArea, response.result);
-				//showResult(resultArea, response.stderr + response.stdout);
+                                //showResult(resultArea, response.result);
+				showResult(resultArea, response.stderr + response.stdout);
 			} else {
 				showResult(resultArea,
 					"Request failed with code: " + req.status);

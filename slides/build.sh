@@ -1,3 +1,4 @@
 #!/bin/bash
-#rustdoc slides.md -o . --markdown-playground-url https://play.rust-lang.org/ --html-in-header=inc/header.inc.html --markdown-no-toc
-rustdoc slides.md -o . --markdown-playground-url http://play.integer32.com --html-in-header=inc/header.inc.html --markdown-no-toc
+url='http://play.rust-lang.org'
+#url='http://play.integer32.org'
+rustdoc -Zunstable-options slides.md -o . --playground-url ${url} --html-in-header=inc/header.inc.html --markdown-no-toc

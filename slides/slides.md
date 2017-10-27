@@ -855,6 +855,16 @@ fn main() {
 <img src="img/stackoverflow.png" alt="stackoverflow" style="width: 400px;"/>
 ![](img/most_loved.png "Most Loved")
 
+# Code Test
+
+```rust
+#[test]
+fn test_it() {}
+```
+
+```rust
+fn main() {}
+```
 # Left
 
 x Deconstruction
