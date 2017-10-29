@@ -1,6 +1,25 @@
 % Rust - Trådning
 ![rust](img/rust.svg)
 
+# Grundconcept
+
+* Samma regler som för borrows:
+   * Flera samtidiga läsare (i olika trådar) eller
+   * En enda skrivande (tråd)
+* Extra marker-interface för typer där 
+   * Ägarskap går att flytta till en annan tråd - Send
+   * Det går att referera till från en annan tråd - Sync
+
+<!--
+  Läsning Funkar för att läsning av effectively final variabel inte kräver sync
+  Skrivning i annan tråd inget problem så länge ingen annan ser
+
+  Metoder som skickar data till andra trådar kräver Send, men 
+   vad kompilatorn beträffar är det vanligt Trait. 
+
+  Kommer gå igenom detta gradvis
+-->
+
 # En Tråd
 
 <script language="rust">
@@ -14,7 +33,7 @@ fn main() {
 
 <!-- Join returnerar Err om tråden panikade -->
 
-# Trådar har returnvärden
+# Trådar har returvärden
 
 <script language="rust">
 fn main() {
@@ -64,7 +83,7 @@ fn main() {
  Sätt tillbaka move
 -->
 
-# Send och Sync
+# Send och Sync i Thread::spawn
 
 ```rust
 pub fn spawn<F, T>(f: F) -> JoinHandle<T> 
@@ -77,27 +96,25 @@ where
 * En typ är Send om den går att ge till en annan tråd
 * En typ är Sync om referenser går att ge till en annan tråd
 
+<!-- 
+ Sync betyder är typens referens är Send
+-->
+
 # Send och Sync för Standardtyper
 
 * Primitiva typer är Send och Sync
-* "Ärvs" eller smittar av sig
-* Är opt out:
-
-<script language="rust">
-#![feature(optin_builtin_traits)]
-struct MinTyp {}
-impl !Sync for MinTyp {}
-fn main() {
-    let _ = MinTyp{};
-}
-</script>
+* "Ärvs" -> Nästan alla typer är Send och Sync
 
 <!-- 
  Typer som enbart innehåller typer som är sync och send
  blir själva sync och send
+
+ Är marker-interface. 
+   Skrivit en wrapper-typ som gör saker trådsäkra? Implementera Sync.
+   Har du en typ 
 -->
 
-# Sync Exempel
+# Sync och Send Exempel
 
 <script language="rust">
 extern crate crossbeam;
@@ -114,7 +131,14 @@ fn main() {
 </script>
 
 <!-- 
+  Closure är by ref per default
+  läsning -> läsref
+  eftersom det gick så är den sync
   Gör closuren move och visa vad som händer
+  - värdet flyttades in 
+  eftersom det gick så är den send
+
+  men flyttar aldrig ut igen, så sista println funkar ej
 -->
 
 # Sync funkar även med Mut
@@ -159,7 +183,7 @@ fn main() {
  Men trådar har oändlig livslängd per default.
 -->
 
-# Thread::spawn signatur
+# Thread::spawn och livstider
 
 ```rust
 pub fn spawn<F, T>(f: F) -> JoinHandle<T> 
@@ -288,3 +312,24 @@ fn main() {
    * Måste man synka med mutex el dyl
 
 # Frågor
+
+# Extra Slide om att implementera Sync  
+
+<script language="rust">
+#![feature(optin_builtin_traits)]
+struct OSynkTyp {}
+impl !Sync for OSynkTyp {}
+
+#[derive(Debug)]
+struct SynkTyp {
+	osynk: *mut u32
+}
+unsafe impl Sync for SynkTyp{}
+
+fn main() {
+    let _ = OSynkTyp{};
+    let mut nummer = 10u32;
+    let s = SynkTyp{ osynk: &mut nummer };
+		println!("pekare: {:?}", s);
+}
+</script>
