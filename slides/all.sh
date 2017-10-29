@@ -3,5 +3,5 @@ trap "exit" INT TERM
 trap "kill 0" EXIT
 ./run_server.sh &
 ./host.sh &
-./loop Chrome &
+./loop $1 &
 wait

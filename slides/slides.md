@@ -1,1 +1,1 @@
-slides_cygni_workshop_just_for_formatting.md
+slides_cygni_workshop_talents.md

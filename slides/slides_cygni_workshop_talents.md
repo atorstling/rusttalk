@@ -1,7 +1,7 @@
 % Rust - Trådning
 ![rust](img/rust.svg)
 
-# Grundconcept
+# Grundkoncept
 
 * Samma regler som för borrows:
    * Flera samtidiga läsare (i olika trådar) eller
@@ -44,6 +44,11 @@ fn main() {
 }
 </script>
 
+<!--
+   Funkar för att datat är Send - går att 
+   flytta ut ur tråden
+-->
+
 # Message Passing
 
 <script language="rust">
@@ -83,7 +88,7 @@ fn main() {
  Sätt tillbaka move
 -->
 
-# Send och Sync i Thread::spawn
+# Send och Sync i thread::spawn
 
 ```rust
 pub fn spawn<F, T>(f: F) -> JoinHandle<T> 
@@ -183,7 +188,7 @@ fn main() {
  Men trådar har oändlig livslängd per default.
 -->
 
-# Thread::spawn och livstider
+# thread::spawn och livstider
 
 ```rust
 pub fn spawn<F, T>(f: F) -> JoinHandle<T> 
@@ -226,8 +231,6 @@ fn main() {
 -->
 
 # Samtidig Användning Kräver Synkronisering
-
-* Trådning har samma borrow-regler som vanligt
 
 * En i taget - Mutex
 * Flera läsare i taget, en skrivare i taget - RwLock
@@ -297,7 +300,13 @@ fn main() {
 
 # Atomics
 
-* Kommer det övning på, inget speciellt
+* Som Java
+
+# Hur funkar Mutex o dyl?
+
+* Tillåter multipla skriv-lån - varför klagar inte kompilatorn?
+* Utger sig för att vara immutable
+* Interior mutability
 
 # Sammanfattning
 
@@ -331,5 +340,32 @@ fn main() {
     let mut nummer = 10u32;
     let s = SynkTyp{ osynk: &mut nummer };
 		println!("pekare: {:?}", s);
+}
+</script>
+
+# Extra Slide om hur Mutex funkar
+
+<script language="rust">
+extern crate crossbeam;
+use std::sync::{Mutex, MutexGuard};
+use std::ops::DerefMut;
+
+fn main() {
+    let m = std::sync::Mutex::new(0u32);
+    crossbeam::scope(|scope| {
+      scope.spawn(|| {
+       let m_ref_1: & Mutex<u32> = &m;
+       let mut g: MutexGuard<u32> = m_ref_1.lock().unwrap();
+       let d: &mut u32 = g.deref_mut();
+       *d+=1;
+      });
+      scope.spawn(|| {
+       let m_ref_2: & Mutex<u32> = &m;
+       let mut g: MutexGuard<u32> = m_ref_2.lock().unwrap();
+       let d: &mut u32 = g.deref_mut();
+       *d+=1;
+      });
+    });
+    println!("final result:{}", m.into_inner().unwrap());
 }
 </script>
