@@ -5,7 +5,7 @@
 
 * Samma regler som för borrows:
    * Flera samtidiga läsare (i olika trådar) eller
-   * En enda skrivande (tråd)
+   * En enda skrivare (i olika trådar)
 * Extra marker-interface för typer där 
    * Ägarskap går att flytta till en annan tråd - Send
    * Det går att referera till från en annan tråd - Sync
@@ -310,15 +310,13 @@ fn main() {
 
 # Sammanfattning
 
+* Samma regler som för vanlig utlåning + Sync & Send
+* Nästan alla typer är Sync & Send
+  * -> Vanliga utlåningscenarion funkar med trådar
+* MEN andra scenarion, tex flera parallela skrivare så
+   * Måste man synka med mutex el dyl
 * Vanliga trådar har oändlig livstid -> lämnar aldrig tillbaka lån
 * Crossbeam::scoped garanterade att terminera
-* För att dela data mellan trådar finns Sync & Send
-   * De flesta typer implementerar båda
-* När man delar Sync data gäller vanliga borrow-regler
-   * Ett skrivlån eller
-   * Flera läslån
-* Men om man vill tillåta andra scenarion, tex flera skrivare så
-   * Måste man synka med mutex el dyl
 
 # Frågor
 
@@ -369,3 +367,43 @@ fn main() {
     println!("final result:{}", m.into_inner().unwrap());
 }
 </script>
+
+# Extra slide - example code
+
+```rust
+extern crate iron;
+extern crate router;
+extern crate rustc_serialize;
+use iron::prelude::*;
+use iron::{status, Listening};
+use router::Router;
+use rustc_serialize::json;
+
+fn server(port: &str) -> Listening {
+    let mut router = Router::new();
+    router.get("/yo/:phrase", get_yo, "get_yo");
+    router.put("/yo",
+               |_: &mut Request| Ok(Response::with((status::ImATeapot, "no"))),
+               "put_yo");
+    Iron::new(router).http(format!("localhost:{}", port)).unwrap()
+}
+
+#[derive(RustcEncodable)]
+struct Answer {
+    msg: String,
+}
+
+fn get_yo(req: &mut Request) -> IronResult<Response> {
+    let phrase = req.extensions.get::<Router>().unwrap().find("phrase").unwrap();
+    let ans = Answer { msg: format!("yo {}!", phrase).to_string() };
+    let payload = json::encode(&ans).unwrap();
+    Ok(Response::with((status::Ok, payload)))
+}
+```
+# Extra slide - hello world
+
+```rust
+fn main() {
+  println!("Hej, världen!");
+}
+```
