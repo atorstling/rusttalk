@@ -25,12 +25,14 @@ pub unsafe trait Send { }
   Kommer gå igenom detta gradvis
 -->
 
-# En Tråd Utan Delad Data
+# En tråd utan delad data
 
 <script language="rust">
+use std::thread::spawn;
+
 fn main() {
-    let thread = std::thread::spawn(|| {
-        println!("Hello, world!");
+    let thread = spawn(|| {
+        println!("hej");
     });
     thread.join().unwrap();
 }
@@ -38,20 +40,23 @@ fn main() {
 
 <!-- Join returnerar Err om tråden panikade -->
 
-# En Tråd med Returvärde
+# En tråd som ges data
 
 <script language="rust">
+use std::thread::spawn;
+
 fn main() {
-    let thread = std::thread::spawn(|| {
-      "Hej, förälder!"
+    let s = "hej".to_owned();
+    let thread = spawn(move || {
+        println!("{}", s);
     });
-    println!("{}", thread.join().unwrap());
+    thread.join().unwrap();
 }
 </script>
 
-<!--
-   Funkar för att datat är Send - går att 
-   flytta ut ur tråden
+<!-- 
+   Move ger datat till barn-tråd 
+   Varför går detta? Jo, för att String är Send
 -->
 
 # Send och Sync i thread::spawn
@@ -64,37 +69,173 @@ where
     T: Send + 'static, 
 ```
 
-* En typ är Send om den går att ge till en annan tråd
-* En typ är Sync om referenser går att ge till en annan tråd
-
 <!-- 
- Sync betyder är typens referens är Send
+ Kräver att datat är send
 -->
 
 # Send och Sync för Standardtyper
 
 * Primitiva typer är Send och Sync
-* "Ärvs" -> Nästan alla standardtyper är Send och Sync
-* Ej Rc, Arc, Mutex och andra specialtyper. Pekare.
+* "Ärvs" -> POJOS är Send och Sync
+* Ej "Tråd-aware" typer
+  * Rc, Arc, Mutex, Custom Pekare.
 
 <!-- 
  Typer som enbart innehåller typer som är sync och send
  blir själva sync och send
 
- Är marker-interface. 
-   Skrivit en wrapper-typ som gör saker trådsäkra? Implementera Sync.
-   Har du en typ 
+ Websockets är inte sync tex. Bundna till server-tråd
 -->
+
+# En tråd som lånar data för läsning
+
+<script language="rust">
+use std::thread::spawn;
+
+fn main() {
+    let s = "hej".to_owned();
+    let thread = spawn(|| {
+        println!("{}", s);
+    });
+    thread.join().unwrap();
+}
+</script>
+
+<!-- Funkar för funktioner, men ej för trådar
+    Vill låna för evigt. Tråden har ej slut.
+-->
+
+# thread::spawn och livstider
+
+```rust
+pub fn spawn<F, T>(f: F) -> JoinHandle<T> 
+where
+    F: FnOnce() -> T,
+    F: Send + 'static,
+    T: Send + 'static, 
+```
+
+<!--
+  'static implicerar statiskt livstid -> "samma livstid som programmet"
+-->
+
+# En scopad tråd som lånar data för läsning
+
+<script language="rust">
+extern crate crossbeam;
+
+fn main() {
+    let s = "hej".to_owned();
+    crossbeam::scope(|scope| { 
+        scope.spawn(|| { 
+          println!("{}", s);
+        });
+    });
+}
+</script>
+
+<!-- 
+  Funkar eftersom scope garanterar avslut 
+   -> tidsbegränsat lån
+-->
+
+# Flera samtidiga trådar som lånar för läsning
+
+<script language="rust">
+extern crate crossbeam;
+
+fn main() {
+    let s = "hej".to_owned();
+    crossbeam::scope(|scope| { 
+        scope.spawn(|| { 
+          println!("t1: {}", s);
+        });
+        scope.spawn(|| { 
+          println!("t2: {}", s);
+        });
+    });
+}
+</script>
+
+<!--
+  Kör flera gånger - ordning odefinierad
+-->
+
+# En tråd som lånar för skrivning
+
+<script language="rust">
+extern crate crossbeam;
+
+fn main() {
+    let mut s: String = "hej".to_owned();
+    crossbeam::scope(|scope| { 
+        scope.spawn(|| { 
+          s.push_str(" på dig");
+        });
+    });
+    println!("huvudtråd säger {}", s);
+}
+</script>
+
+# Flera trådar som lånar för skrivning
+
+<script language="rust">
+extern crate crossbeam;
+
+fn main() {
+    let mut s: String = "hej".to_owned();
+    crossbeam::scope(|scope| { 
+        scope.spawn(|| { 
+          s.push_str(" dig");
+        });
+    });
+    crossbeam::scope(|scope| { 
+        scope.spawn(|| { 
+          s.push_str(" dig");
+        });
+    });
+    println!("huvudtråd säger {}", s);
+}
+</script>
+
+<!--
+  Editera bort mittendel - samtidiga skrivningar tillåts ej
+-->
+
+# En Tråd med Returvärde
+
+<script language="rust">
+use std::thread::spawn;
+
+fn main() {
+    let thread = spawn(|| {
+      "Hej, förälder!".to_owned()
+    });
+    println!("{}", thread.join().unwrap());
+}
+</script>
+
+<!--
+   Funkar för att datat är Send - går att 
+   flytta ut ur tråden
+   
+   Introducera Send
+-->
+
+
+
+
 
 
 # Message Passing
 
 <script language="rust">
+use std::thread::spawn;
 use std::sync::mpsc::{Sender, Receiver, channel};
 
 fn main() {
     let (tx, rx): (Sender<String>, Receiver<String>) = channel();
-    let _thread = std::thread::spawn(move || {
+    let _thread = spawn(move || {
         tx.send(", World!".to_owned()).unwrap();
     });
     println!("Hello {}", rx.recv().unwrap());
@@ -108,11 +249,12 @@ fn main() {
 # Message Passing Tagning 2
 
 <script language="rust">
+use std::thread::spawn;
 use std::sync::mpsc::{Sender, Receiver, channel};
 
 fn main() {
     let (tx, rx): (Sender<String>, Receiver<String>) = channel();
-    let _thread = std::thread::spawn(|| {
+    let _thread = spawn(|| {
         tx.send(", World!".to_owned()).unwrap();
     });
     println!("Hello {}", rx.recv().unwrap());
@@ -126,33 +268,6 @@ fn main() {
  Sätt tillbaka move
 -->
 
-
-# Sync och Send Exempel
-
-<script language="rust">
-extern crate crossbeam;
-
-fn main() {
-    let s: String = "hej".to_owned();
-    crossbeam::scope(|scope| { 
-        scope.spawn(|| { 
-          println!("barntråd säger {}", s);
-        });
-    });
-    println!("huvudtråd säger {}", s);
-}
-</script>
-
-<!-- 
-  Closure är by ref per default
-  läsning -> läsref
-  eftersom det gick så är den sync
-  Gör closuren move och visa vad som händer
-  - värdet flyttades in 
-  eftersom det gick så är den send
-
-  men flyttar aldrig ut igen, så sista println funkar ej
--->
 
 # Sync funkar även med Mut
 
@@ -196,19 +311,7 @@ fn main() {
  Men trådar har oändlig livslängd per default.
 -->
 
-# thread::spawn och livstider
 
-```rust
-pub fn spawn<F, T>(f: F) -> JoinHandle<T> 
-where
-    F: FnOnce() -> T,
-    F: Send + 'static,
-    T: Send + 'static, 
-```
-
-<!--
-  'static implicerar statiskt livstid -> "samma livstid som programmet"
--->
 
 # Mutera i flera trådar
 
@@ -306,9 +409,6 @@ fn main() {
   ordning garanterad? Kör några gånger.
 -->
 
-# Atomics
-
-* Som Java
 
 # Hur funkar Mutex o dyl?
 
