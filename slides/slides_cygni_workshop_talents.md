@@ -6,9 +6,14 @@
 * Samma regler som för borrows:
    * Flera samtidiga läsare (i olika trådar) eller
    * En enda skrivare (i olika trådar)
-* Extra marker-interface för typer där 
-   * Ägarskap går att flytta till en annan tråd - Send
-   * Det går att referera till från en annan tråd - Sync
+* Extra marker-interface för typer:
+   * Send - Ägarskap går att flytta till en annan tråd
+   * Sync - Referenser går att flytta till en annan tråd
+
+<script language="rust">
+pub unsafe trait Sync { }
+pub unsafe trait Send { }
+</script>
 
 <!--
   Läsning Funkar för att läsning av effectively final variabel inte kräver sync
@@ -20,7 +25,7 @@
   Kommer gå igenom detta gradvis
 -->
 
-# En Tråd
+# En Tråd Utan Delad Data
 
 <script language="rust">
 fn main() {
@@ -33,7 +38,7 @@ fn main() {
 
 <!-- Join returnerar Err om tråden panikade -->
 
-# Trådar har returvärden
+# En Tråd med Returvärde
 
 <script language="rust">
 fn main() {
@@ -48,6 +53,39 @@ fn main() {
    Funkar för att datat är Send - går att 
    flytta ut ur tråden
 -->
+
+# Send och Sync i thread::spawn
+
+```rust
+pub fn spawn<F, T>(f: F) -> JoinHandle<T> 
+where
+    F: FnOnce() -> T,
+    F: Send + 'static,
+    T: Send + 'static, 
+```
+
+* En typ är Send om den går att ge till en annan tråd
+* En typ är Sync om referenser går att ge till en annan tråd
+
+<!-- 
+ Sync betyder är typens referens är Send
+-->
+
+# Send och Sync för Standardtyper
+
+* Primitiva typer är Send och Sync
+* "Ärvs" -> Nästan alla standardtyper är Send och Sync
+* Ej Rc, Arc, Mutex och andra specialtyper. Pekare.
+
+<!-- 
+ Typer som enbart innehåller typer som är sync och send
+ blir själva sync och send
+
+ Är marker-interface. 
+   Skrivit en wrapper-typ som gör saker trådsäkra? Implementera Sync.
+   Har du en typ 
+-->
+
 
 # Message Passing
 
@@ -88,36 +126,6 @@ fn main() {
  Sätt tillbaka move
 -->
 
-# Send och Sync i thread::spawn
-
-```rust
-pub fn spawn<F, T>(f: F) -> JoinHandle<T> 
-where
-    F: FnOnce() -> T,
-    F: Send + 'static,
-    T: Send + 'static, 
-```
-
-* En typ är Send om den går att ge till en annan tråd
-* En typ är Sync om referenser går att ge till en annan tråd
-
-<!-- 
- Sync betyder är typens referens är Send
--->
-
-# Send och Sync för Standardtyper
-
-* Primitiva typer är Send och Sync
-* "Ärvs" -> Nästan alla typer är Send och Sync
-
-<!-- 
- Typer som enbart innehåller typer som är sync och send
- blir själva sync och send
-
- Är marker-interface. 
-   Skrivit en wrapper-typ som gör saker trådsäkra? Implementera Sync.
-   Har du en typ 
--->
 
 # Sync och Send Exempel
 
