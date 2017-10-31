@@ -405,6 +405,10 @@ fn main() {
 * En del typer är av naturen ej trådsäkra
   * Styrs med Sync & Send
 
+# Utelämnat
+
+* Rc, Arc
+
 # Frågor
 
 # Extra Slide om att implementera Sync  
