@@ -342,23 +342,21 @@ where
 
 <script language="rust">
 #![feature(optin_builtin_traits)]
-extern crate libc;
+extern crate nix;
 extern crate crossbeam;
 
 #[derive(Debug)]
-struct PidHolder { pid: i32 }
-impl PidHolder {
-    fn new() -> PidHolder {
-        unsafe {
-          PidHolder { pid: libc::getpid() }
-        }
+struct TidHolder { tid : nix::unistd::Pid }
+impl TidHolder {
+    fn new() -> TidHolder {
+          TidHolder { tid: nix::unistd::gettid() }
     }
 }
 // Pid would be different in other thread
-impl !Send for PidHolder {}
+impl !Send for TidHolder {}
 
 fn main() {
-  let ph = PidHolder::new();
+  let ph = TidHolder::new();
   crossbeam::scope(|scope| {
     scope.spawn(move || {
       println!("{:?}", ph);
